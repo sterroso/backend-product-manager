@@ -1,64 +1,20 @@
-class Product {
-  /**
-   * Crea una instancia nueva de producto especificando el título,
-   * descripción, precio, URL de su imagen, código SKU, y stock
-   * disponible en el almacén.
-   *
-   * @param {string} title - Título del producto.
-   * @param {string} description - Descripción del producto.
-   * @param {Number} price - Precio del producto (debe ser mayo o igual a cero).
-   * @param {string} thumbnail - URL a la imagen del producto.
-   * @param {string} code - Código SKU del producto.
-   * @param {Number} stock - Cantidad del producto disponible en el almacén.
-   */
-  constructor(title, description, price, thumbnail, code, stock) {
-    if ((title ?? 'empty') === 'empty') {
-      throw new Error('Parameter "title" is mandatory. Please provide a value for "title".');
-    }
+import Product from "./Product.js";
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 
-    if ((description ?? 'empty') === 'empty') {
-      throw new Error('Parameter "description" is mandatory. Please provide a value for "description".');
-    }
-
-    if ((price ?? 'empty') === 'empty') {
-      throw new Error('Parameter "price" is mandatory. Please provide a value for "price".');
-    }
-
-    if (price < 0) {
-      throw new RangeError('Parameter "price" must have a value equal or greater to 0 (zero).');
-    }
-
-    if ((thumbnail ?? 'empty') === 'empty') {
-      throw new Error('Parameter "thumbnail" is mandatory. Please provide a value for "thumbnail".');
-    }
-
-    if ((code ?? 'empty') === 'empty') {
-      throw new Error('Parameter "code" is mandatory. Please provide a value for "code".');
-    }
-
-    if ((stock ?? 'empty') === 'empty') {
-      throw new Error('Parameter "stock" is mandatory. Please provide a value for "stock".');
-    }
-
-    if (stock < 0) {
-      throw new Error('Parameter "stock" must have a value equal or greater to 0 (zero).');
-    }
-
-    this.title = title.trim();
-    this.description = description.trim();
-    this.price = price;
-    this.thumbnail = thumbnail.trim();
-    this.code = code.trim().toUpperCase();
-    this.stock = stock;
-  }
-};
-
-class ProductManager {
+export default class ProductManager {
   static #lastProductId;
+
+  static #defaultPersistFilePath = './ProductManager.json';
+
+  static #persistFileOptions = {
+    encoding: 'utf-8',
+  };
 
   #products = [];
 
-  constructor() {
+  constructor(persistFilePath) {
+    this.path = (persistFilePath ?? ProductManager.#defaultPersistFilePath);
+    this.#init();
   }
 
   /**
@@ -73,9 +29,11 @@ class ProductManager {
    */
   addProduct = (product) => {
     if(!this.#products.some(p => p.code === product.code)) {
-      product.id = ProductManager.#getLastProductId();
+      product.id = ProductManager.#getNewProductId();
 
       this.#products.push(product);
+
+      this.#persist();
 
       // Devuelve el id del nuevo producto como indicador que la
       // operación fue exitosa.
@@ -119,128 +77,88 @@ class ProductManager {
   }
 
   /**
-   * Allows to peek to the next product id to be assigned.
+   * Provides the path to the file where Products will be saved
+   * by the current ProductManager instance.
    *
-   * @returns The next id that will be assigned to a product successfully added.
+   * @returns The path to te file where Products will be saved.
    */
-  static peekNextId = () => {
-    if (!ProductManager.#lastProductId) {
-      return 1;
-    }
+  getPersistPath = () => this.path;
 
-    return ProductManager.#lastProductId + 1;
+  /**
+   * Initializes the current ProductManager Instance.
+   * If the persistence file exists, and contains products, they
+   * will be loaded as well as the lastProductId value.
+   */
+  #init = () => {
+    if (existsSync(this.getPersistPath())) {
+      const fileReader = readFileSync(this.getPersistPath(), ProductManager.#persistFileOptions);
+      const persistedProductManager = JSON.parse(fileReader);
+
+      ProductManager.#setLastProductId(persistedProductManager.lastProductId);
+
+      this.#setProducts(persistedProductManager.products);
+    } else {
+      ProductManager.#setLastProductId(0);
+    }
+  }
+
+  #setProducts = (products) => {
+    this.#products = [...products];
+
+    return this.#products.length;
   }
 
   /**
-   * Increments the last Product ID and returns its new value by 1 (one).
+   * Provides a stringified object containing the lasProductId and
+   * the products array.
    *
-   * @returns The last Product ID inserted, plus 1 (one).
+   * @returns a stringified object ready to be saved.
    */
-  static #getLastProductId = () => {
-    if (!ProductManager.#lastProductId) {
-      ProductManager.#lastProductId = 0;
-    }
+  #getPersistObject = () => {
+    const persistObject = {};
+    persistObject.lastProductId = ProductManager.getLastProductId();
+    persistObject.products = this.getProducts();
 
+    return JSON.stringify(persistObject);
+  }
+
+  /**
+   * Saves the products array and the last product Id assigned.
+   */
+  #persist = () => {
+    writeFileSync(this.getPersistPath(), this.#getPersistObject(), ProductManager.#persistFileOptions);
+  }
+
+  /**
+   * Gets the last product id kept by the ProductManager class.
+   *
+   * @returns The last Product ID assigned.
+   */
+   static getLastProductId = () => {
+    return ProductManager.#lastProductId;
+  }
+
+  /**
+   * Increments the Last Product Id and returns the new value.
+   *
+   * @returns a new Product Id.
+   */
+  static #getNewProductId = () => {
     return ++ProductManager.#lastProductId;
   }
-}
 
-// Se creará una instancia de la clase “ProductManager”
-const productManager = new ProductManager();
-if (productManager) {
-  console.log('New ProductManager instance has been created.');
-}
+  /**
+   * Sets a new value for the lastProductId.
+   *
+   * @param {int} value New value for the last product id.
+   * @returns The new lastProductId value if successful, 0 otherwie.
+   */
+  static #setLastProductId = (value) => {
+    if (value && value >= 0) {
+      ProductManager.#lastProductId = value;
+      return ProductManager.#lastProductId;
+    }
 
-// Se llamará “getProducts” recién creada la instancia, debe devolver un arreglo vacío []
-console.log('getProducts()', productManager.getProducts());
-
-/**
- * Se llamará al método “addProduct” con los campos:
- * title: “producto prueba”
- * description:”Este es un producto prueba”
- * price:200,
- * thumbnail:”Sin imagen”
- * code:”abc123”,
- * stock:25
- */
-console.log('addProduct()',
-  productManager.addProduct(
-    new Product(
-      "producto prueba",
-      "Este es un producto prueba",
-      200,
-      "Sin imagen",
-      "abc123",
-      25
-    )
-  )
-);
-
-// El objeto debe agregarse satisfactoriamente con un id generado automáticamente SIN REPETIRSE
-console.log('addProduct()',
-  productManager.addProduct(
-    new Product(
-      "producto prueba 2",
-      "Este es un producto prueba 2",
-      199.99,
-      "Sin imagen",
-      "abc1234",
-      666
-    )
-  )
-);
-
-console.log('addProduct()',
-  productManager.addProduct(
-    new Product(
-      "producto prueba 3",
-      "Este es un producto prueba 3",
-      198.99,
-      "Sin imagen",
-      "abc12345",
-      42
-    )
-  )
-);
-
-console.log('addProduct()',
-  productManager.addProduct(
-    new Product(
-      "producto prueba 4",
-      "Este es un producto prueba 4",
-      420,
-      "Sin imagen",
-      "abc123456",
-      69
-    )
-  )
-);
-
-// Se llamará el método “getProducts” nuevamente, esta vez debe aparecer el producto recién agregado
-console.log('getProducts()', productManager.getProducts());
-
-// Se llamará al método “addProduct” con los mismos campos de arriba, debe arrojar un error porque el código estará repetido.
-try {
-  console.log('addProduct()',
-    productManager.addProduct(
-      new Product(
-        "producto prueba",
-        "Este es un producto prueba",
-        200,
-        "Sin imagen",
-        "abc123",
-        25
-      )
-    )
-  );
-} catch (err) {
-  console.error(err);
-}
-
-// Se evaluará que getProductById devuelva error si no encuentra el producto o el producto en caso de encontrarlo
-try {
-  console.log('getProductById(1)', productManager.getProductById(1));
-  console.log('getProductById(100)', productManager.getProductById(100));  // Debe devolver un error.
-} catch (err) {
-  console.error(err);
+    return 0;
+  }
 }
