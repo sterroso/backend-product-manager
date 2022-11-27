@@ -44,6 +44,71 @@ export default class ProductManager {
   }
 
   /**
+   * Updates a product identified by it's Product Id. If the
+   * product exists within the products array of this ProductManager instance,
+   * its values will be updated with the new values passed through the
+   * product parameter.
+   *
+   * @param {int} productId The product's id to be updated,
+   * @param {Product} updateProduct A product with the new values.
+   * @returns true if the product was found and updated.
+   * @throws Error if could not find a product identified by the ProductId parameter.
+   */
+  updateProduct = (productId, updateProduct) => {
+    const productFoundIndex = this.#products.findIndex(product => product.id === productId);
+
+    if (productFoundIndex !== -1) {
+      const newProduct = new Product(
+        updateProduct.title,
+        updateProduct.description,
+        updateProduct.price,
+        updateProduct.thumbnail,
+        updateProduct.code,
+        updateProduct.stock
+      );
+
+      newProduct.id = productId;
+
+      this.#products = [
+        ...this.#products.slice(0, productFoundIndex),
+        newProduct,
+        ...this.#products.slice(productFoundIndex + 1)
+      ];
+
+      this.#persist();
+
+      return true;
+    } else {
+      throw new Error(`No product was updated. Product with id ${productId} was not found.`);
+    }
+  }
+
+  /**
+   * Deletes a product, identified by its id, if found within the
+   * products array of this ProductManager instance.
+   *
+   * @param {int} productId The id of the product to be deleted.
+   * @returns the length of the products array after deletion.
+   * @throws Error if could not find a product identified by the ProductId parameter.
+   */
+  deleteProduct = (productId) => {
+    const productFoundIndex = this.#products.findIndex(product => product.id === productId);
+
+    if (productFoundIndex !== -1) {
+      this.#products = [
+        ...this.#products.slice(0, productFoundIndex),
+        ...this.#products.slice(productFoundIndex + 1)
+      ];
+
+      this.#persist();
+
+      return this.#products.length;
+    } else {
+      throw new Error(`No product was deleted. Product with id ${productId} was not found.`);
+    }
+  }
+
+  /**
    *
    * @returns Devuelve la colección de productos.
    */
@@ -96,9 +161,22 @@ export default class ProductManager {
 
       ProductManager.#setLastProductId(persistedProductManager.lastProductId);
 
-      this.#setProducts(persistedProductManager.products);
+      this.#setProducts(persistedProductManager.products.map(product => {
+        const managedProduct = new Product(
+          product.title,
+          product.description,
+          product.price,
+          product.thumbnail,
+          product.code,
+          product.code
+        );
+
+        managedProduct.id = product.id;
+
+        return managedProduct;
+      }));
     } else {
-      ProductManager.#setLastProductId(0);
+      ProductManager.#lastProductId = 0;
     }
   }
 
