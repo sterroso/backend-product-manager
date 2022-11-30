@@ -10,19 +10,26 @@ app.get('/', (req, res) => {
   res.send('<p><a href="/products">Lista de Productos</a></p>');
 });
 
-// Devuelve la lista
+// Devuelve la lista de productos delimitada por los parámetros de
+// consulta (query params) offset (desplazamiento) y limit (límite),
+// donde offset corresponde al primer índice, de la lista de productos,
+// y limit corresponde a la cantidad máxima de productos que se devolverán.
+// De manera que los productos devueltos son un subconjunto de la lista
+// de todos los productos en el productManager.
+//
+// Si offset + limit resulta en un índice superior al del último producto
+// de la lista de productos, se truncarán los resultados hasta el último
+// producto disponible.
 app.get('/products', (req, res) => {
   const responseObject = {};
 
-  const requestQuery = req.query;
+  const allProducts = productManager.getProducts();
 
-  const { offset, limit } = requestQuery;
+  const { offset, limit } = req.query;
 
   const startIndex = Number(offset ?? 0);
 
   const pageLength = Number(limit ?? 10);
-
-  const allProducts = productManager.getProducts();
 
   if (startIndex < allProducts.length) {
     const lastIndex = Math.min(allProducts.length, (startIndex + pageLength));
