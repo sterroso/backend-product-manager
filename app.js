@@ -27,10 +27,15 @@ app.get('/products', (req, res) => {
 
   const { offset, limit } = req.query;
 
-  // Math.max function filters negative values passed through the query params.
-  const startIndex = Math.max(Number(offset ?? 0), 0);
+  const offsetNumber = Number(offset ?? 0);
 
-  const pageLength = Math.max(Number(limit ?? 0), 0);
+  const limitNumber = Number(limit ?? 0);
+
+  // Math.max function filters negative values passed through the query params.
+  // isNaN prevents NaN values to be evaluated in Math.max
+  const startIndex = Math.max(isNaN(offsetNumber) ? 0 : offsetNumber, 0);
+
+  const pageLength = Math.max(isNaN(limitNumber) ? 0 : limitNumber, 0);
 
   if (startIndex < allProducts.length) {
     const lastIndex = pageLength === 0 ? allProducts.length : Math.min(allProducts.length, (startIndex + pageLength));
