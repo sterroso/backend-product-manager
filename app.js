@@ -27,12 +27,13 @@ app.get('/products', (req, res) => {
 
   const { offset, limit } = req.query;
 
-  const startIndex = Number(offset ?? 0);
+  // Math.max function filters negative values passed through the query params.
+  const startIndex = Math.max(Number(offset ?? 0), 0);
 
-  const pageLength = Number(limit ?? 10);
+  const pageLength = Math.max(Number(limit ?? 0), 0);
 
   if (startIndex < allProducts.length) {
-    const lastIndex = Math.min(allProducts.length, (startIndex + pageLength));
+    const lastIndex = pageLength === 0 ? allProducts.length : Math.min(allProducts.length, (startIndex + pageLength));
 
     const filteredProducts = allProducts.slice(startIndex, lastIndex);
 
