@@ -29,18 +29,58 @@ app.get('/products', (req, res) => {
 
   const offsetNumber = Number(offset ?? 0);
 
+  // Returns an error if value passed through offset parameter is not
+  // convertible to Number.
+  if (isNaN(offsetNumber)) {
+    responseObject.status = 'error';
+    responseObject.error = `Error: '${offset}' is not a valid offset value.`;
+
+    res.send(responseObject);
+
+    return;
+  }
+
+  // Returns an error if value passed through offset paramter is a
+  // negative or non-integer value.
+  if (offsetNumber < 0 || offsetNumber % 1 !== 0) {
+    responseObject.status = 'error';
+    responseObject.error = `Error: offset parameter must be a non-negative integer.`;
+
+    res.send(responseObject);
+
+    return;
+  }
+
   const limitNumber = Number(limit ?? 0);
 
-  // Math.max function filters negative values passed through the query params.
-  // isNaN prevents NaN values to be evaluated in Math.max
-  const startIndex = Math.max(isNaN(offsetNumber) ? 0 : offsetNumber, 0);
+  // Returns an error if value passed through limit parameter is not
+  // convertible to Number.
+  if (isNaN(limitNumber)) {
+    responseObject.status = 'error';
+    responseObject.error = `Error: '${limit}' is not a valid limit value.`;
 
-  const pageLength = Math.max(isNaN(limitNumber) ? 0 : limitNumber, 0);
+    res.send(responseObject);
 
-  if (startIndex < allProducts.length) {
-    const lastIndex = pageLength === 0 ? allProducts.length : Math.min(allProducts.length, (startIndex + pageLength));
+    return;
+  }
 
-    const filteredProducts = allProducts.slice(startIndex, lastIndex);
+  // Returns an error if value passed through limit parameter is a
+  // negative or non-integer value.
+  if (limitNumber < 0 || limitNumber % 1 !== 0) {
+    responseObject.status = 'error';
+    responseObject.error = 'Error: limit parameter must be a non-negative integer.';
+
+    res.send(responseObject);
+
+    return;
+  }
+
+  // Checks if offsetNumber value is less than the length of the
+  // products array.
+  if (offsetNumber < allProducts.length) {
+    const lastIndex = limitNumber === 0 ? allProducts.length : Math.min(allProducts.length, (offsetNumber + limitNumber));
+
+    const filteredProducts = allProducts.slice(offsetNumber, lastIndex);
 
     responseObject.status = 'success';
     responseObject.products = filteredProducts;
@@ -54,9 +94,20 @@ app.get('/products', (req, res) => {
 
 // Devuelve un producto específico identificado por su id.
 app.get('/products/:id', (req, res) => {
+  const responseObject = {};
+
   const productId = Number(req.params.id);
 
-  const responseObject = {};
+  // Returns an error if value passed through id parameter is not
+  // a number.
+  if (isNaN(productId)) {
+    responseObject.status = 'error';
+    responseObject.error = `Error: '${req.params.id}' is not a valid product id.`;
+
+    res.send(responseObject);
+
+    return;
+  }
 
   try {
     const product = productManager.getProductById(productId);
