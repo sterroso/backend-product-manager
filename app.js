@@ -9,7 +9,7 @@ const productManager = new ProductManager();
 
 // Raíz del sitio
 app.get('/', (req, res) => {
-  res.send('<p><a href="/products">Lista de Productos</a></p>');
+  res.send('<p><a href="/api/products">Lista de Productos</a></p>');
 });
 
 // Devuelve la lista de productos delimitada por los parámetros de
@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 // Si offset + limit resulta en un índice superior al del último producto
 // de la lista de productos, se truncarán los resultados hasta el último
 // producto disponible.
-app.get('/products', (req, res) => {
+app.get('/api/products', (req, res) => {
   const responseObject = {};
 
   const allProducts = productManager.getProducts();
@@ -95,7 +95,7 @@ app.get('/products', (req, res) => {
 });
 
 // Devuelve un producto específico identificado por su id.
-app.get('/products/:id', (req, res) => {
+app.get('/api/products/:id', (req, res) => {
   const responseObject = {};
 
   const productId = Number(req.params.id);

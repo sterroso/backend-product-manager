@@ -75,6 +75,9 @@ que el *producto* no existe.
    del archivo `initialInsert.js` antes de arrancar el servidor Express.
 4. Se agregó el script `dev`, en el archivo `package.json` para iniciar el servidor en
    modo depuración.
+5. Se agregó el prefijo `api/` a las rutas indicadas en la consigna del desafío, de modo
+   que, a partir de esta etapa del proyecto, la ruta para desplegar los productos es
+   `http://localhost:8080/api/products` en vez de `http://localhost:8080/products`.
 
 ***
 
