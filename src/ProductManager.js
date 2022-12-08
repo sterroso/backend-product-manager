@@ -18,6 +18,21 @@ export default class ProductManager {
   }
 
   /**
+   * Devuelve la cantidad de productos en esta instancia de
+   * ProductManger.
+   */
+  get count() {
+    return this.#products.length;
+  }
+
+  /**
+   * Devuelve el que será el próximo id de producto.
+   */
+  get nextProductId() {
+    return ProductManager.getLastProductId() + 1;
+  }
+
+  /**
    * Agrega un producto a la colección de productos. Si el producto pasado
    * mediante el parámetro product, tiene un código repetido, éste no se
    * agregará a la colección.
@@ -25,22 +40,22 @@ export default class ProductManager {
    * Si se agrega exitosamente el producto a la colección, devuelve el id
    * asignado, de lo contrario devuelve -1 (uno negativo).
    *
-   * @param {Product} product - El producto que va a agregarse a la colección.
+   * @param {Product} newProduct - El producto que va a agregarse a la colección.
    */
-  addProduct = (product) => {
-    if(!this.#products.some(p => p.code === product.code)) {
-      product.id = ProductManager.#getNewProductId();
+  addProduct = (newProduct) => {
+    if(!this.#products.some(product => product.code === newProduct.code)) {
+      newProduct.id = ProductManager.#getNewProductId();
 
-      this.#products.push(product);
+      this.#products.push(newProduct);
 
       this.#persist();
 
       // Devuelve el id del nuevo producto como indicador que la
       // operación fue exitosa.
-      return product.id;
+      return newProduct.id;
     }
 
-    throw new Error(`There is already a product with code ${product.code}.`);
+    throw new Error(`There is already a product with code ${newProduct.code}.`);
   }
 
   /**
@@ -106,6 +121,15 @@ export default class ProductManager {
     } else {
       throw new Error(`No product was deleted. Product with id ${productId} was not found.`);
     }
+  }
+
+  /**
+   * Borra todos los productos y reestablece el lastProductId a 0 (cero).
+   */
+  reset = () => {
+    this.#products = [];
+    ProductManager.#lastProductId = 0;
+    this.#persist();
   }
 
   /**

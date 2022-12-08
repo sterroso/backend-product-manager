@@ -1,6 +1,8 @@
 import express from 'express';
 import ProductManager from "./src/ProductManager.js";
 
+const PORT = 8080;
+
 const app = express();
 
 const productManager = new ProductManager();
@@ -35,7 +37,7 @@ app.get('/products', (req, res) => {
     responseObject.status = 'error';
     responseObject.error = `Error: '${offset}' is not a valid offset value.`;
 
-    res.send(responseObject);
+    res.status(400).json(responseObject).end();
 
     return;
   }
@@ -46,7 +48,7 @@ app.get('/products', (req, res) => {
     responseObject.status = 'error';
     responseObject.error = `Error: offset parameter must be a non-negative integer.`;
 
-    res.send(responseObject);
+    res.status(400).json(responseObject).end();
 
     return;
   }
@@ -59,7 +61,7 @@ app.get('/products', (req, res) => {
     responseObject.status = 'error';
     responseObject.error = `Error: '${limit}' is not a valid limit value.`;
 
-    res.send(responseObject);
+    res.status(400).json(responseObject).end();
 
     return;
   }
@@ -70,7 +72,7 @@ app.get('/products', (req, res) => {
     responseObject.status = 'error';
     responseObject.error = 'Error: limit parameter must be a non-negative integer.';
 
-    res.send(responseObject);
+    res.status(400).json(responseObject).end();
 
     return;
   }
@@ -89,7 +91,7 @@ app.get('/products', (req, res) => {
     responseObject.error = 'Error: offset value out of bounds.';
   }
 
-  res.send(responseObject);
+  res.json(responseObject);
 });
 
 // Devuelve un producto específico identificado por su id.
@@ -104,7 +106,7 @@ app.get('/products/:id', (req, res) => {
     responseObject.status = 'error';
     responseObject.error = `Error: '${req.params.id}' is not a valid product id.`;
 
-    res.send(responseObject);
+    res.status(400).json(responseObject).end();
 
     return;
   }
@@ -119,7 +121,14 @@ app.get('/products/:id', (req, res) => {
     responseObject.error = `${err}`;
   }
 
-  res.send(responseObject);
+  res.json(responseObject);
 });
 
-app.listen(8080, () => console.log('Servidor escuchando peticiones en el puerto 8080: http://localhost:8080/'));
+// Agrega un nuevo producto al ProductManager
+app.put('/api/products', (req, res) => {
+  const { payload } = req.body;
+
+  console.log(payload);
+});
+
+app.listen(PORT, () => console.log(`Servidor escuchando peticiones en el puerto ${PORT}: http://localhost:${PORT}/`));
