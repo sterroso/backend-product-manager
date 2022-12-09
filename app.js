@@ -121,14 +121,14 @@ app.get('/api/products/:id', (req, res) => {
     responseObject.error = `${err}`;
   }
 
-  res.json(responseObject);
+  res.json(responseObject).end();
 });
 
 // Agrega un nuevo producto al ProductManager
 app.put('/api/products', (req, res) => {
-  const { payload } = req.body;
+  console.log(req.trailers);
 
-  console.log(payload);
+  res.status(201).end();
 });
 
-app.listen(PORT, () => console.log(`Servidor escuchando peticiones en el puerto ${PORT}: http://localhost:${PORT}/`));
+app.listen(PORT, () => console.log(`[ listening on port ${PORT}: http://localhost:${PORT}/ ]> 🤖`));

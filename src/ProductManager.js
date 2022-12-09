@@ -192,7 +192,7 @@ export default class ProductManager {
           product.price,
           product.thumbnail,
           product.code,
-          product.code
+          product.stock
         );
 
         managedProduct.id = product.id;
