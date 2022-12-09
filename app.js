@@ -4,6 +4,9 @@ import ProductManager from "./src/ProductManager.js";
 const PORT = 8080;
 
 const app = express();
+app.use(express.json());
+app.use(express.text());
+app.use(express.urlencoded({ extended: true }));
 
 const productManager = new ProductManager();
 
@@ -126,7 +129,7 @@ app.get('/api/products/:id', (req, res) => {
 
 // Agrega un nuevo producto al ProductManager
 app.put('/api/products', (req, res) => {
-  console.log(req.trailers);
+  console.log('req.body', req.body);
 
   res.status(201).end();
 });
