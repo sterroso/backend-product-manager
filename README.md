@@ -6,6 +6,92 @@ en un archivo en el sistema de archivos local.
 
 ***
 
+## Primera preentrega del proyecto final (12/10/2022 - 12/10/17)
+
+Se desarrollará un servidor que contenga los endpoints y servicios necesarios
+para gestionar los productos y carritos de compra en el e-commerce.
+
+### Se debe entregar {#se-debe-entregar}
+
+Desarrollar el servidor basado en [Node.JS](https://nodejs.org/en/) y
+[Express](https://expressjs.com/es/), que escuche en el puerto `8080` y
+disponga de dos grupos de rutas: `/products` y `/carts`. Dichos endpoints
+estarán implementados con el router de Express, con las siguientes
+especificaciones:
+
+1. Para el manejo de *productos*, el cual tendrá su router en `/api/products/`,
+   configurar las siguientes rutas:
+    - La ruta raíz `/`, mediante el método *GET*, deberá listar todos los
+      *productos* de la base (incluyendo la limitación `?limit` del desafío
+      anterior)
+    - La ruta `/:pid`, mediante el método *GET*, deberá traer sólo el producto
+      con el *id* proporcionado.
+    - La ruta raíz `/`, mediante el método *POST*, deberá agregar un nuevo
+      *producto* con los campos:
+        - `id`: `number`/`string` (a tu elección). El *id* **NO** se manda
+          desde el *body*. El *id* se autogenera como lo hemos visto desde los
+          primeros entregables, asegurando que **NUNCA** se repetirán los *ids*
+          en el archivo.
+        - `title`: `string`,
+        - `description`: `string`,
+        - `code`: `string`,
+        - `price`: `number`,
+        - `status`: `boolean`, *verdadero* (`true`) por defecto,
+        - `stock`: `number`,
+        - `category`: `string`,
+        - `thumbnails`: `Array` de `string` que contengan las rutas donde están
+          almacenadas las imágenes referentes a dicho producto.
+        > Todos los campos son obligatorios, a excepción de `thumbnails`.
+    - La ruta `/:pid`, mediante el método *PUT*, deberá tomar un producto y
+      actualizar o eliminar el *id* al momento de hacer dicha actualización.
+    - La ruta `/:pid`, mediante el método *DELETE*, deberá eliminar el producto
+      con el *pid* indicado.
+2. Para el *carrito*, el cual tendrá su router en `/api/carts/`, configurar dos
+   rutas:
+    - La ruta raíz `/`, mediante el método *POST*, deberá crear un nuevo
+      *carrito* con la siguiente estructura:
+        - `id`: `number`/`string` (a tu elección). De igual manera, como con
+          los *productos*, debes asegurar que nunca se dupliquen los *ids* y
+          **que éste se genere automáticamente**.
+        - `products`: `Array` que contendrá objetos que representen a cada
+          *producto*
+    - La ruta `/:cid`, mediante el método *GET*, deberá listar los productos
+      que pertenezcan al carrito con el parámetro *cid* proporcionado.
+    - La ruta `/:cid/product/:pid`, mediante el método *POST*, deberá agregar
+      el *producto* al arreglo `products` del carrito seleccionado, agregándose
+      como objeto bajo el siguiente formato:
+        - `product`: **SÓLO DEBE CONTENER EL ID DEL PRODUCTO**. Es crucial que
+          no agregues el producto completo.
+        - `quantity`: debe contener el número de ejemplares de dicho
+          *producto*. El *producto* de momento, se agregará de uno en uno.
+3. Además, si un producto ya existente se intenta agregar al *arreglo de
+   productos*, incrementar el campo `quantity` de dicho producto.
+4. La persistencia de la información se implementará utilizando el *file
+   system*, donde los archivos `productos.json` y `carrito.json` respaldan la
+   información.
+5. No es necesario realizar ninguna implementación visual. Todo el flujo se
+   puede realizar por *Postman* o por el cliente de tu preferencia.
+
+### Formato
+
+Link al [repositorio de GitHub](https://github.com/sterroso/backend-product-manager/tree/PrimeraPreentregaProyectoFinal)
+con el proyecto completo, sin la carpeta de `node_modules`.
+
+### Sugerencias
+
+- No olvides `app.use(express.json())`.
+- No es necesario implementar multer.
+- Link al vídeo donde se explica.
+
+
+### Notas de desarrollador
+
+1. Incluí la suite de pruebas, que se puede ejecutar mediante el comando
+   `node --test`, mediante la cual se realizarán todas las pruebas para
+   verificar que se cumpla con los requerimientos listados en [Se debe entregar](#se-debe-entregar).
+
+***
+
 ## Tercer desafío entregable (12/3/2022 - 12/10/2022)
 
 ### Servidor con Express
