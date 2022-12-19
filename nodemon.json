@@ -1,0 +1,4 @@
+{
+  "verbose": true,
+  "ignore": ["**/productos.json", "**/carrito.json", "**/public/**"]
+}

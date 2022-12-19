@@ -50,6 +50,10 @@ export default class CartManager {
     return CartManager.#lastCartId + 1;
   }
 
+  get path() {
+    return this.#path;
+  }
+
   /**
    * Returns an array of Products from the CartManager list (array) of
    * carts.
@@ -90,6 +94,7 @@ export default class CartManager {
     const managedCart = {
       ...cart,
       id: CartManager.#generateNexCartId(),
+      manager: this,
     };
 
     this.#carts.push(managedCart);
@@ -163,7 +168,10 @@ export default class CartManager {
 
       CartManager.#lastCartId = persistedCartManager.lastCartId;
 
-      this.#carts = persistedCartManager.carts;
+      this.#carts = persistedCartManager.carts.map((cart) =>{
+        const newCart = new Cart();
+        
+      });
     } else {
       CartManager.#lastCartId = 0;
       this.#carts = [];
@@ -177,14 +185,14 @@ export default class CartManager {
    * @returns A string with the CartManager's properties to be saved to a .json
    * file.
    */
-  #getPersistObject = () => {
+  getPersistObject = () => {
     const persistObject = {};
 
     persistObject.lastCartId = CartManager.#lastCartId;
 
-    persistObject.carts = this.#carts;
+    persistObject.carts = this.#carts.map((cart) => cart.getPersistObject());
 
-    return JSON.stringify(persistObject);
+    return persistObject;
   };
 
   /**
@@ -194,7 +202,7 @@ export default class CartManager {
   #persist = () => {
     writeFileSync(
       this.#path,
-      this.#getPersistObject(),
+      JSON.stringify(this.getPersistObject()),
       CartManager.#persistentFileOptions
     );
   };

@@ -26,5 +26,13 @@
   "devDependencies": {
     "eslint": "^8.29.0",
     "nodemon": "^2.0.20"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/productos.json",
+      "**/carrito.json",
+      "**/public/**"
+    ],
+    "verbose": true
   }
 }

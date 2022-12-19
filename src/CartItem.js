@@ -11,6 +11,15 @@ export default class CartItem {
     this.quantity = quantity;
   }
 
+  getPersistObject = () => {
+    const persistObject = {};
+    persistObject.productId = this.productId;
+    persistObject.salesPrice = this.salesPrice;
+    persistObject.quantity = this.quantity;
+
+    return this.persistObject;
+  }
+
   static parse = (object) => {
     const newCartItem = new CartItem(
       object.productId,

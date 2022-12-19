@@ -1,4 +1,5 @@
 import CartItem from "./CartItem.js";
+import CartManager from "./CartManager.js";
 
 export default class Cart {
   #id = null;
@@ -8,6 +9,8 @@ export default class Cart {
   #createdOn;
 
   #modifiedOn;
+
+  #manager = null;
 
   constructor() {
     const creationDate = new Date(Date.now());
@@ -40,6 +43,13 @@ export default class Cart {
     return this.#modifiedOn;
   }
 
+  /**
+   * @param {CartManager} object - This Cart's CartManager.
+   */
+  set manager(object) {
+    this.#manager = new CartManager(object.path);
+  }
+
   addItem = (item, quantity = 1, increaseOnDuplicateCode = true) => {
     const itemAlreadyExists = this.#items.some(
       (existingItem) => existingItem.productId === item.productId
@@ -51,6 +61,8 @@ export default class Cart {
           (existingItem) => existingItem.productId === item.productId
         );
         currentItem.quantity += quantity;
+
+        const persistObject = this.manager.save();
       } else {
         throw new Error(
           `Duplicate Item. Item with code ${item.code} already exists in the Cart.`
@@ -69,13 +81,28 @@ export default class Cart {
   getItemById = (id) => this.#items.find((item) => item.id === id);
 
   static parse = (object) => {
-    const currentTimestamp = new Date(Date.now());
     const newCart = new Cart();
     newCart.#id = object.id;
-    newCart.#createdOn = currentTimestamp;
-    newCart.#modifiedOn = currentTimestamp;
-    newCart.#items = object.items ?? [];
+    newCart.#createdOn = object.createdOn;
+    newCart.#modifiedOn = object.modifiedOn;
+    if (object.items) {
+      newCart.#items = object.items.map(
+        (item) => new CartItem(item.productId, item.salesPrice, item.quantity)
+      );
+    } else {
+      newCart.#items = [];
+    }
 
     return newCart;
+  };
+
+  getPersistObject = () => {
+    const persistObject = {};
+    persistObject.id = this.#id;
+    persistObject.createdOn = this.createdOn;
+    persistObject.modifiedOn = this.modifiedOn;
+    persistObject.items = this.#items.map((item) => item.persistObject());
+
+    return persistObject;
   };
 }
