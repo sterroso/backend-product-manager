@@ -48,10 +48,6 @@ CartsRouter.post("/", (req, res) => {
   const returnObject = {};
   let returnStatus = 201;
 
-  // const { products } = req.body;
-
-  // const productsArray = JSON.parse(products ?? []);
-
   const cartManager = new CartManager(cartsPath);
 
   const newCartId = cartManager.addCart(new Cart());

@@ -2,30 +2,20 @@ import CartItem from "./CartItem.js";
 import CartManager from "./CartManager.js";
 
 export default class Cart {
-  #id = null;
-
   #items = [];
-
-  #createdOn;
 
   #modifiedOn;
 
-  #manager = null;
+  manager;
 
   constructor() {
     const creationDate = new Date(Date.now());
 
-    this.#id = null;
-
     this.#items = [];
 
-    this.#createdOn = creationDate;
+    this.createdOn = creationDate;
 
     this.#modifiedOn = creationDate;
-  }
-
-  get id() {
-    return this.#id;
   }
 
   get count() {
@@ -33,10 +23,6 @@ export default class Cart {
       (total, current) => (total += current.quantity),
       0
     );
-  }
-
-  get createdOn() {
-    return this.#createdOn;
   }
 
   get modifiedOn() {
@@ -47,7 +33,7 @@ export default class Cart {
    * @param {CartManager} object - This Cart's CartManager.
    */
   set manager(object) {
-    this.#manager = new CartManager(object.path);
+    this.manager = new CartManager(object.path);
   }
 
   addItem = (item, quantity = 1, increaseOnDuplicateCode = true) => {
@@ -82,8 +68,8 @@ export default class Cart {
 
   static parse = (object) => {
     const newCart = new Cart();
-    newCart.#id = object.id;
-    newCart.#createdOn = object.createdOn;
+    newCart.id = object.id;
+    newCart.createdOn = object.createdOn;
     newCart.#modifiedOn = object.modifiedOn;
     if (object.items) {
       newCart.#items = object.items.map(
@@ -98,7 +84,7 @@ export default class Cart {
 
   getPersistObject = () => {
     const persistObject = {};
-    persistObject.id = this.#id;
+    persistObject.id = this.id;
     persistObject.createdOn = this.createdOn;
     persistObject.modifiedOn = this.modifiedOn;
     persistObject.items = this.#items.map((item) => item.persistObject());

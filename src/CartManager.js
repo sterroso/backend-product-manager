@@ -91,11 +91,14 @@ export default class CartManager {
    * @returns The lenght of the CartManager's array of Carts.
    */
   addCart = (cart) => {
+    const newCartId = CartManager.#generateNexCartId();
+
     const managedCart = {
       ...cart,
-      id: CartManager.#generateNexCartId(),
       manager: this,
     };
+
+    managedCart.id = newCartId;
 
     this.#carts.push(managedCart);
 
@@ -168,9 +171,8 @@ export default class CartManager {
 
       CartManager.#lastCartId = persistedCartManager.lastCartId;
 
-      this.#carts = persistedCartManager.carts.map((cart) =>{
+      this.#carts = persistedCartManager.carts.map((cart) => {
         const newCart = new Cart();
-        
       });
     } else {
       CartManager.#lastCartId = 0;
