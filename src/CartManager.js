@@ -13,7 +13,7 @@ export default class CartManager {
 
   #carts;
 
-  #path = "";
+  path;
 
   /**
    * Creates a new CartManager instance.
@@ -22,7 +22,7 @@ export default class CartManager {
    * properties (and carts) will be persisted.
    */
   constructor(filePath = null) {
-    this.#path = filePath ?? CartManager.#defaultPersistentFilePath;
+    this.path = filePath ?? CartManager.#defaultPersistentFilePath;
     this.#init();
   }
 
@@ -51,7 +51,7 @@ export default class CartManager {
   }
 
   get path() {
-    return this.#path;
+    return this.path;
   }
 
   /**
@@ -102,7 +102,7 @@ export default class CartManager {
 
     this.#carts.push(managedCart);
 
-    this.#persist();
+    this.save();
 
     return managedCart.id;
   };
@@ -123,7 +123,10 @@ export default class CartManager {
 
     if (cartQuery) {
       const originalId = cartQuery.id;
+
       cartQuery = { ...cart, id: originalId };
+
+      this.save();
     }
 
     throw new Error(`There is no product with id ${id} in the Cart.`);
@@ -142,13 +145,14 @@ export default class CartManager {
 
     if (existsCart) {
       this.#carts = this.#carts.find((cart) => cart.id !== id);
+
+      this.save();
+
       return true;
     }
 
     return false;
   };
-
-  save = () => this.#persist();
 
   /**
    * Private method. Initializes the CartManager:
@@ -161,18 +165,20 @@ export default class CartManager {
    * Otherwise, initializes the CartManger's properties to default values.
    */
   #init = () => {
-    if (existsSync(this.#path)) {
+    if (existsSync(this.path)) {
       const fileReader = readFileSync(
-        this.#path,
+        this.path,
         CartManager.#persistentFileOptions
       );
 
-      const persistedCartManager = JSON.parse(fileReader);
+      const jsonCartManager = JSON.parse(fileReader);
 
-      CartManager.#lastCartId = persistedCartManager.lastCartId;
+      CartManager.#lastCartId = jsonCartManager.lastCartId;
 
-      this.#carts = persistedCartManager.carts.map((cart) => {
-        const newCart = new Cart();
+      jsonCartManager.carts.forEach((cart) => {
+        const newCart = Cart.parse(cart);
+        newCart.manager = this;
+        this.addCart(newCart);
       });
     } else {
       CartManager.#lastCartId = 0;
@@ -192,7 +198,12 @@ export default class CartManager {
 
     persistObject.lastCartId = CartManager.#lastCartId;
 
-    persistObject.carts = this.#carts.map((cart) => cart.getPersistObject());
+    persistObject.carts = [];
+
+    this.#carts.forEach((cart) => {
+      const newCart = Cart.parse(cart);
+      persistObject.carts.push(newCart.getPersistObject());
+    });
 
     return persistObject;
   };
@@ -201,12 +212,10 @@ export default class CartManager {
    * Private method. Saves, to a .json file, an object with the CartManager's
    * properties.
    */
-  #persist = () => {
-    writeFileSync(
-      this.#path,
-      JSON.stringify(this.getPersistObject()),
-      CartManager.#persistentFileOptions
-    );
+  save = () => {
+    const managerString = JSON.stringify(this.getPersistObject());
+
+    writeFileSync(this.path, managerString, CartManager.#persistentFileOptions);
   };
 
   /**

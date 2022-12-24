@@ -90,6 +90,7 @@ ProductsRouter.get("/:pid", (req, res) => {
       returnObject.status = "success";
       returnObject.product = requestedProduct;
     } else {
+      returnStatus = 400;
       returnObject.status = "fail";
       returnObject.message = `No product with id ${pid} was found.`;
     }
@@ -120,7 +121,7 @@ ProductsRouter.post("/", (req, res) => {
     thumbnails,
   } = req.body;
 
-  if (!!title || !!description || !!code || !!price || !!stock || !!category) {
+  if (!title || !description || !code || !price || !stock || !category) {
     returnStatus = 400;
     returnObject.status = "error";
     returnObject.message =
@@ -204,7 +205,7 @@ ProductsRouter.put("/:pid", (req, res) => {
 
     if (existingProduct) {
       try {
-        updateProduct = new Product(
+        const updateProduct = new Product(
           title ?? existingProduct.title,
           description ?? existingProduct.description,
           code ?? existingProduct.code,
@@ -267,6 +268,7 @@ ProductsRouter.delete("/:pid", (req, res) => {
       returnObject.deleteCount = 1;
       returnObject.deletedProductId = intPid;
     } else {
+      returnStatus = 400;
       returnObject.status = "fail";
       returnObject.message = `No product with id ${pid} was found.`;
     }

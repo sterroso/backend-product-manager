@@ -4,16 +4,18 @@ import CartManager from "./CartManager.js";
 export default class Cart {
   #items = [];
 
-  #modifiedOn;
+  #manager;
 
-  manager;
+  #createdOn;
+
+  #modifiedOn;
 
   constructor() {
     const creationDate = new Date(Date.now());
 
     this.#items = [];
 
-    this.createdOn = creationDate;
+    this.#createdOn = creationDate;
 
     this.#modifiedOn = creationDate;
   }
@@ -29,52 +31,74 @@ export default class Cart {
     return this.#modifiedOn;
   }
 
-  /**
-   * @param {CartManager} object - This Cart's CartManager.
-   */
-  set manager(object) {
-    this.manager = new CartManager(object.path);
+  get createdOn() {
+    return this.#createdOn;
   }
 
-  addItem = (item, quantity = 1, increaseOnDuplicateCode = true) => {
+  get manager() {
+    return this.#manager;
+  }
+
+  set manager(object) {
+    if (object instanceof CartManager) {
+      this.#manager = object;
+    }
+  }
+
+  getItems = () => this.#items;
+
+  /**
+   * Adds a new product descriptor (id, sales price and quantity) to this Cart.
+   *
+   * @param {CartItem} item A new item to be added to the Cart.
+   * @param {boolean} increaseOnDuplicateProductId If true (default), item's
+   * quantity will be increased when a duplicate item's product id is found in
+   * this Cart.
+   * @returns The total count, for the provided item id, in the Cart after
+   * adding or increaing its quantity.
+   * @throws {Error} if the item's product id is already on this Cart and the
+   * value of parameter increaseOnDuplicateProductId is false.
+   */
+  addItem = (item, increaseOnDuplicateProductId = true) => {
     const itemAlreadyExists = this.#items.some(
       (existingItem) => existingItem.productId === item.productId
     );
 
     if (itemAlreadyExists) {
-      if (increaseOnDuplicateCode) {
+      if (increaseOnDuplicateProductId) {
         const currentItem = this.#items.find(
           (existingItem) => existingItem.productId === item.productId
         );
-        currentItem.quantity += quantity;
 
-        const persistObject = this.manager.save();
+        currentItem.quantity += item.quantity;
+
+        this.manager.save();
+
+        return currentItem.quantity;
       } else {
         throw new Error(
           `Duplicate Item. Item with code ${item.code} already exists in the Cart.`
         );
       }
     } else {
-      item.quantity = quantity;
       this.#items.push(item);
+
+      this.manager.save();
+
+      return item.quantity;
     }
-
-    return this.count;
   };
-
-  getItems = () => this.#items;
 
   getItemById = (id) => this.#items.find((item) => item.id === id);
 
   static parse = (object) => {
     const newCart = new Cart();
-    newCart.id = object.id;
-    newCart.createdOn = object.createdOn;
+
+    newCart.#createdOn = object.createdOn;
     newCart.#modifiedOn = object.modifiedOn;
+
     if (object.items) {
-      newCart.#items = object.items.map(
-        (item) => new CartItem(item.productId, item.salesPrice, item.quantity)
-      );
+      object.items.forEach((item) => newCart.addItem(CartItem.parse(item)));
     } else {
       newCart.#items = [];
     }
@@ -87,7 +111,12 @@ export default class Cart {
     persistObject.id = this.id;
     persistObject.createdOn = this.createdOn;
     persistObject.modifiedOn = this.modifiedOn;
-    persistObject.items = this.#items.map((item) => item.persistObject());
+    persistObject.items = [];
+
+    this.#items.forEach((item) => {
+      const newItem = CartItem.parse(item);
+      persistObject.items.push(newItem.getPersistObject());
+    });
 
     return persistObject;
   };
