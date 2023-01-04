@@ -1,0 +1,122 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+}
+
+#container {
+  width: 95%;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+#container header {
+  display: flex;
+  flex-direction: column;
+}
+
+#container header .brand {
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+  border-bottom: thick solid grey;
+  border-left: thick solid grey;
+  border-right: thin solid grey;
+}
+
+.logo {
+  width: 3rem;
+  margin-right: 0.5rem;
+}
+
+#nav {
+  margin-top: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  border-radius: 0.75rem;
+  border-top: thin solid grey;
+  border-right: thin solid grey;
+  border-bottom: thick solid grey;
+  border-left: thick solid grey;
+}
+
+#nav .main-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: small;
+  font-weight: bold;
+  font-variant: small-caps;
+}
+
+#nav .main-menu .main-menu-item {
+  margin: 0.25rem 0.5rem;
+}
+
+#nav .main-menu .main-menu-item .link,
+#nav .main-menu .main-menu-item .link:link,
+#nav .main-menu .main-menu-item .link:visited {
+  color: crimson;
+  text-decoration: none;
+  border-top: thin solid grey;
+  border-right: thin solid grey;
+  border-bottom: medium solid grey;
+  border-left: thin solid grey;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+#nav .main-menu .main-menu-item .link:hover,
+#nav .main-menu .main-menu-item .link:focus,
+#nav .main-menu .main-menu-item .link:active {
+  color: seashell;
+  background-color: brown;
+}
+
+#container main {
+  padding: 0.5rem;
+  margin: 1rem 0;
+  height: max-content;
+}
+
+.split-horizontal {
+  display: flex;
+}
+
+.split-horizontal .w70 {
+  width: 70%;
+  flex: 7 7 70%;
+}
+
+.split-horizontal .w30 {
+  width: 30%;
+  flex: 3 3 30%;
+}
+
+.product-item {
+  margin: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  border: solid thick crimson;
+  border-radius: 0.75rem;
+}
+
+.product-item-title {
+  font-size: xx-large;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  padding: 0 0.5rem;
+  border-bottom: solid thin crimson;
+  background-color: seashell;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+#products-list {
+  max-height: 60vh;
+  overflow-y: scroll;
+}
