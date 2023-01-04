@@ -1,0 +1,37 @@
+    <header>
+      <div class="brand">
+        <img
+          class="logo"
+          src="/public/img/products_icon_128x128.png"
+          alt="Logotipo de productos"
+        />
+        <h1 class="main-title">Productos</h1>
+      </div>
+
+      <nav id="nav">
+        <ul class="main-menu">
+          <li class="main-menu-item">
+            <a href="/realtimeproducts" class="link">Productos en tiempo real</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <div id="products">
+        <h2>Inventario de Productos</h2>
+        <input type="button" id="load-products-button" value="Cargar productos" />
+        <ul id="products-list"></ul>
+      </div>
+    </main>
+
+    <footer>
+      <div class="author">
+        <p>Autor:
+          <a class="email-link" href="mailto:sergio.terroso@gmail.com">Sergio
+            Terroso</a></p>
+      </div>
+    </footer>
+
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/public/js/ProductsLoader.js"></script>

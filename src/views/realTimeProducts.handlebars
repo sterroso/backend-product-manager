@@ -1,0 +1,129 @@
+    <header>
+      <div class="brand">
+        <img
+          class="logo"
+          src="/public/img/products_icon_128x128.png"
+          alt="Logotipo de productos"
+        />
+        <h1 class="main-title">Productos en tiempo real</h1>
+      </div>
+
+      <nav id="nav">
+        <ul class="main-menu">
+          <li class="main-menu-item">
+            <a href="/" class="link">Productos</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <div class="split-horizontal">
+        <div id="products w70">
+          <h2>Inventario de Productos</h2>
+          <div id="products-list"></div>
+        </div>
+
+        <div class="products-form w30">
+          <h2>Agregar un nuevo producto</h2>
+          <form id="add-product-form" method="post">
+            <fieldset>
+              <div class="field-row text-field required">
+                <label for="product-code">Código:</label>
+                <input
+                  type="text"
+                  name="product-code"
+                  id="product-code"
+                  maxlength="9"
+                  minlength="3"
+                  required
+                />
+              </div>
+
+              <div class="field-row text-field required">
+                <label for="product-category">Categoría:</label>
+                <input
+                  type="text"
+                  name="product-category"
+                  id="product-category"
+                  minlength="3"
+                  maxlength="18"
+                  required
+                />
+              </div>
+
+              <div class="field-row text-field">
+                <label for="product-title">Título:</label>
+                <input
+                  type="text"
+                  name="product-title"
+                  id="product-title"
+                  minlength="9"
+                  maxlength="36"
+                  required
+                />
+              </div>
+
+              <div class="field-row textarea-field required">
+                <label for="product-description">Descripción</label>
+                <textarea
+                  name="product-description"
+                  id="product-description"
+                  cols="36"
+                  rows="3"
+                  placeholder="Breve descripción del producto"
+                ></textarea>
+              </div>
+
+              <div class="field-row number-field required">
+                <label for="product-price">Precio:</label>
+                <input
+                  type="number"
+                  name="product-price"
+                  id="product-price"
+                  min="0"
+                  required
+                />
+              </div>
+
+              <div class="field-row numberfield required">
+                <label for="product-stock">Existencias:</label>
+                <input
+                  type="number"
+                  name="product-stock"
+                  id="product-stock"
+                  min="1"
+                  required
+                />
+              </div>
+
+              <div class="field-row checkbox-field">
+                <input
+                  type="checkbox"
+                  name="product-status"
+                  id="product-status"
+                  checked
+                />
+                <label for="product-status">Status</label>
+              </div>
+            </fieldset>
+
+            <div class="button-row justified-end">
+              <input type="button" id="add-product-button" value="Agregar" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="author">
+        <p>Autor:
+          <a class="email-link" href="mailto:sergio.terroso@gmail.com">Sergio
+            Terroso</a></p>
+      </div>
+    </footer>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/public/js/ProductsWebSocket.js"></script>

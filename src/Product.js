@@ -8,9 +8,9 @@ export default class Product {
    * @param {string} description - Descripción del producto.
    * @param {string} code - Código SKU del producto.
    * @param {number} price - Precio del producto (debe ser mayo o igual a cero)
-   * @param {boolean} status - Estado del producto.
    * @param {number} stock - Cantidad del producto disponible en el almacén.
    * @param {string} category - Categoría del producto.
+   * @param {boolean} status - Estado del producto.
    * @param {[string]} thumbnails - Un arreglo de strings con URIs a las
    * imágenes del producto.
    */
