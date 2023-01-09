@@ -1,123 +1,170 @@
 import CartItem from "./CartItem.js";
-import CartManager from "./CartManager.js";
 
 export default class Cart {
   #items = [];
-
-  #manager;
 
   #createdOn;
 
   #modifiedOn;
 
-  constructor() {
-    const creationDate = new Date(Date.now());
+  #manager;
 
-    this.#items = [];
+  constructor(items) {
+    const currentTimestamp = new Date(Date.now());
 
-    this.#createdOn = creationDate;
+    if (!!items) {
+      items.forEach((item) => {
+        try {
+          this.#items.push(CartItem.parse(item));
+        } catch (err) {}
+      });
+    } else {
+      this.#items = [];
+    }
 
-    this.#modifiedOn = creationDate;
-  }
+    this.#createdOn = currentTimestamp;
 
-  get count() {
-    return this.#items.reduce(
-      (total, current) => (total += current.quantity),
-      0
-    );
-  }
-
-  get modifiedOn() {
-    return this.#modifiedOn;
+    this.#modifiedOn = currentTimestamp;
   }
 
   get createdOn() {
     return this.#createdOn;
   }
 
+  get modifiedOn() {
+    return this.#modifiedOn;
+  }
+
   get manager() {
     return this.#manager;
   }
 
-  set manager(object) {
-    if (object instanceof CartManager) {
-      this.#manager = object;
-    }
+  get count() {
+    return this.#items.reduce((count, item) => {
+      count += item.quantity;
+      return count;
+    }, 0);
   }
 
-  getItems = () => this.#items;
+  setManager = (manager) => {
+    this.#manager = manager;
+  };
+
+  getItems = (limit = 0, offset = 0) => {
+    if (limit < 0 || offset < 0)
+      throw new Error(
+        "Parameters <limit> and <offset> must be non-negative integers."
+      );
+
+    if (limit > 0) return this.#items.slice(offset, offset + limit);
+
+    return this.#items.slice(offset);
+  };
 
   /**
-   * Adds a new product descriptor (id, sales price and quantity) to this Cart.
+   * Adds new item into the Cart.
    *
-   * @param {CartItem} item A new item to be added to the Cart.
-   * @param {boolean} increaseOnDuplicateProductId If true (default), item's
-   * quantity will be increased when a duplicate item's product id is found in
-   * this Cart.
-   * @returns The total count, for the provided item id, in the Cart after
-   * adding or increaing its quantity.
-   * @throws {Error} if the item's product id is already on this Cart and the
-   * value of parameter increaseOnDuplicateProductId is false.
+   * @param {CartItem} item A new item to be added tot he Cart.
    */
-  addItem = (item, increaseOnDuplicateProductId = true) => {
-    const itemAlreadyExists = this.#items.some(
-      (existingItem) => existingItem.productId === item.productId
+  addItem = (item) => {
+    const modifiedTimestamp = new Date(Date.now());
+
+    const existingItem = this.#items.find(
+      (cartItem) => cartItem.productId === item.productId
     );
 
-    if (itemAlreadyExists) {
-      if (increaseOnDuplicateProductId) {
-        const currentItem = this.#items.find(
-          (existingItem) => existingItem.productId === item.productId
-        );
-
-        currentItem.quantity += item.quantity;
-
-        this.manager.save();
-
-        return currentItem.quantity;
-      } else {
-        throw new Error(
-          `Duplicate Item. Item with code ${item.code} already exists in the Cart.`
-        );
-      }
+    if (existingItem) {
+      existingItem.updateQuantity(existingItem.quantity + item.quantity);
     } else {
-      this.#items.push(item);
+      const newCartItem = CartItem.parse(item);
+      this.#items.push(newCartItem);
+    }
+
+    this.#modifiedOn = modifiedTimestamp;
+
+    this.manager.save();
+  };
+
+  updateItemQuantity = (productId, newQuantity) => {
+    const existingItem = this.#items.find(
+      (item) => item.productId === productId
+    );
+
+    if (existingItem) {
+      if (existingItem.updateQuantity(newQuantity))
+        this.#modifiedOn = new Date(Date.now());
 
       this.manager.save();
 
-      return item.quantity;
+      return existingItem;
     }
+
+    throw new Error(
+      `No item with productId ${productId} was found in this Cart.`
+    );
   };
 
-  getItemById = (id) => this.#items.find((item) => item.id === id);
+  updateItemSalesPrice = (productId, newSalesPrice) => {
+    const existingItem = this.#items.find(
+      (item) => item.productId === productId
+    );
 
-  static parse = (object) => {
-    const newCart = new Cart();
+    if (existingItem) {
+      if (existingItem.updateSalesPrice(newSalesPrice))
+        this.#modifiedOn = new Date(Date.now());
 
-    newCart.#createdOn = object.createdOn;
-    newCart.#modifiedOn = object.modifiedOn;
+      this.manager.save();
 
-    if (object.items) {
-      object.items.forEach((item) => newCart.addItem(CartItem.parse(item)));
-    } else {
-      newCart.#items = [];
+      return existingItem;
     }
 
-    return newCart;
+    throw new Error(
+      `No item with productId ${productId} was found in this Cart.`
+    );
   };
 
   getPersistObject = () => {
     const persistObject = {};
+
     persistObject.id = this.id;
     persistObject.createdOn = this.createdOn;
     persistObject.modifiedOn = this.modifiedOn;
     persistObject.items = [];
 
     this.#items.forEach((item) => {
-      const newItem = CartItem.parse(item);
-      persistObject.items.push(newItem.getPersistObject());
+      persistObject.items.push(item.getPersistObject());
     });
 
     return persistObject;
+  };
+
+  static parse = (object) => {
+    const parsingTimestamp = new Date(Date.now());
+    const cartItems = [];
+
+    if (object.items && object.items.length > 0) {
+      object.items.forEach((item) => {
+        const newItem = CartItem.parse(item);
+        cartItems.push(newItem);
+      });
+    }
+
+    const newCart = new Cart(cartItems);
+
+    newCart.id = object.id;
+
+    if (object.createdOn) {
+      newCart.#createdOn = new Date(Date.parse(object.createdOn));
+    } else {
+      newCart.#createdOn = parsingTimestamp;
+    }
+
+    if (object.modifiedOn) {
+      newCart.#modifiedOn = new Date(Date.parse(object.modifiedOn));
+    } else {
+      newCart.#modifiedOn = parsingTimestamp;
+    }
+
+    return newCart;
   };
 }

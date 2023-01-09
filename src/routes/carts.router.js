@@ -20,7 +20,7 @@ CartsRouter.get("/:cid", (req, res) => {
   if (isNaN(cartId) || cartId < 1 || cartId % 1 !== 0) {
     returnStatus = 400;
     returnObject.status = "error";
-    returnObject.message = 'Error: parameter "cid" must be a positive integer.';
+    returnObject.message = "Error: parameter <cid> must be a positive integer.";
   } else {
     const cartManager = new CartManager(cartsPath);
 
@@ -30,10 +30,7 @@ CartsRouter.get("/:cid", (req, res) => {
       const productManager = new ProductManager(productsPath);
 
       returnObject.status = "success";
-      returnObject.cart = { id: requestedCart.id };
-      returnObject.cart.products = requestedCart.map((cartProduct) =>
-        productManager.getProductById(cartProduct.id)
-      );
+      returnObject.cart = requestedCart.getPersistObject();
     } else {
       returnStatus = 400;
       returnObject.status = "error";
@@ -52,8 +49,10 @@ CartsRouter.post("/", (req, res) => {
 
   const newCartId = cartManager.addCart(new Cart());
 
+  const newCart = cartManager.getCartById(newCartId);
+
   returnObject.status = "success";
-  returnObject.newCartId = newCartId;
+  returnObject.cart = newCart.getPersistObject();
 
   res.status(returnStatus).json(returnObject).end();
 });
@@ -71,17 +70,17 @@ CartsRouter.post("/:cid/product/:pid", (req, res) => {
   if (isNaN(cartId) || cartId < 0 || cartId % 1 !== 0) {
     returnStatus = 400;
     returnObject.status = "error";
-    returnObject.message = 'Error: parameter "cid" must be a positive integer.';
+    returnObject.message = "Error: parameter <cid> must be a positive integer.";
   } else {
     if (isNaN(productId) || productId < 1 || productId % 1 !== 0) {
       returnStatus = 400;
       returnObject.status = "error";
       returnObject.message =
-        'Error: parameter "pid" must be a positive integer.';
+        "Error: parameter <pid> must be a positive integer.";
     } else {
       const cartManager = new CartManager(cartsPath);
 
-      const existingCart = Cart.parse(cartManager.getCartById(cartId));
+      const existingCart = cartManager.getCartById(cartId);
 
       if (existingCart) {
         const productManager = new ProductManager(productsPath);
@@ -91,14 +90,13 @@ CartsRouter.post("/:cid/product/:pid", (req, res) => {
         if (existingProduct) {
           const cartItem = new CartItem(
             existingProduct.id,
-            existingProduct.price
+            existingProduct.price,
+            CartItem.defaultItemQuantity
           );
-          existingCart.addItem(cartItem, 1, true);
+          existingCart.addItem(cartItem);
           cartManager.save();
           returnObject.status = "success";
-          returnObject.newItem = { id: existingProduct.id };
-          returnObject.newItem.quantity = cartItem.quantity;
-          returnObject.newItem.salesPrice = cartItem.salesPrice;
+          returnObject.newItem = cartItem.getPersistObject();
         } else {
           returnStatus = 400;
           returnObject.status = "error";

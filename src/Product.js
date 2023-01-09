@@ -69,4 +69,37 @@ export default class Product {
     this.status = status;
     this.thumbnails = thumbnails;
   }
+
+  getPersistObject = () => {
+    const persistObject = {};
+
+    persistObject.id = this.id;
+    persistObject.title = this.title;
+    persistObject.description = this.description;
+    persistObject.code = this.code;
+    persistObject.price = this.price;
+    persistObject.stock = this.stock;
+    persistObject.category = this.category;
+    persistObject.status = this.status;
+    persistObject.thumbnails = this.thumbnails;
+
+    return persistObject;
+  };
+
+  static parse = (object) => {
+    const parsedProduct = new Product(
+      object.title,
+      object.description,
+      object.code,
+      object.price,
+      object.stock,
+      object.category,
+      object.status,
+      object.thumbnails
+    );
+
+    parsedProduct.id = object.id;
+
+    return parsedProduct;
+  };
 }

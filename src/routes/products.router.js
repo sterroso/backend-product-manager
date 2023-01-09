@@ -125,7 +125,7 @@ ProductsRouter.post("/", (req, res) => {
     returnStatus = 400;
     returnObject.status = "error";
     returnObject.message =
-      "Bad Request: properties title (string), description (string), code (string), price (number), stock (number) and category (string) are mandatory.";
+      "Bad Request: properties <title> (string), <description> (string), <code> (string), <price> (number), <stock> (number) and <category> (string) are mandatory.";
   } else {
     try {
       const product = new Product(

@@ -68,7 +68,7 @@ export default class ProductManager {
 
     this.#products.push(newProduct);
 
-    this.#persist();
+    this.save();
 
     // Devuelve el id del nuevo producto como indicador que la
     // operación fue exitosa.
@@ -99,7 +99,7 @@ export default class ProductManager {
       existingProduct.category = updateProduct.category;
       existingProduct.thumbnails = updateProduct.thumbnails;
 
-      this.#persist();
+      this.save();
 
       return true;
     } else {
@@ -125,7 +125,7 @@ export default class ProductManager {
         (product) => product.id !== productId
       );
 
-      this.#persist();
+      this.save();
 
       return this.#products.length;
     } else {
@@ -142,9 +142,7 @@ export default class ProductManager {
    *
    * @returns Devuelve la colección de productos.
    */
-  getProducts = () => {
-    return this.#products;
-  };
+  getProducts = () => this.#products;
 
   /**
    * Busca un producto específico en la colección de productos mediante
@@ -164,6 +162,37 @@ export default class ProductManager {
     );
 
   /**
+   * Provides a stringified object containing the lasProductId and
+   * the products array.
+   *
+   * @returns a stringified object ready to be saved.
+   */
+  getPersistObject = () => {
+    const persistObject = {};
+    persistObject.lastProductId = this.lastProductId;
+    persistObject.products = [];
+
+    this.#products.forEach((product) => {
+      persistObject.products.push(product.getPersistObject());
+    });
+
+    return persistObject;
+  };
+
+  /**
+   * Saves the products array and the last product Id assigned.
+   */
+  save = () => {
+    const persistProductManager = JSON.stringify(this.getPersistObject());
+
+    writeFileSync(
+      this.#path,
+      persistProductManager,
+      ProductManager.#persistFileOptions
+    );
+  };
+
+  /**
    * Initializes the current ProductManager Instance.
    * If the persistence file exists, and contains products, they
    * will be loaded as well as the lastProductId value.
@@ -178,36 +207,15 @@ export default class ProductManager {
 
       ProductManager.#lastProductId = persistedProductManager.lastProductId;
 
-      this.#products = persistedProductManager.products;
+      persistedProductManager.products.forEach((persistedProduct) => {
+        const parsedProduct = Product.parse(persistedProduct);
+
+        this.#products.push(parsedProduct);
+      });
     } else {
       ProductManager.#lastProductId = 0;
       this.#products = [];
     }
-  };
-
-  /**
-   * Provides a stringified object containing the lasProductId and
-   * the products array.
-   *
-   * @returns a stringified object ready to be saved.
-   */
-  #getPersistObject = () => {
-    const persistObject = {};
-    persistObject.lastProductId = this.lastProductId;
-    persistObject.products = this.#products;
-
-    return JSON.stringify(persistObject);
-  };
-
-  /**
-   * Saves the products array and the last product Id assigned.
-   */
-  #persist = () => {
-    writeFileSync(
-      this.#path,
-      this.#getPersistObject(),
-      ProductManager.#persistFileOptions
-    );
   };
 
   /**
