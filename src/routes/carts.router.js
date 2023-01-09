@@ -95,8 +95,9 @@ CartsRouter.post("/:cid/product/:pid", (req, res) => {
           );
           existingCart.addItem(cartItem);
           cartManager.save();
+          const resultingItem = existingCart.getItemByProductId(productId);
           returnObject.status = "success";
-          returnObject.newItem = cartItem.getPersistObject();
+          returnObject.item = resultingItem.getPersistObject();
         } else {
           returnStatus = 400;
           returnObject.status = "error";

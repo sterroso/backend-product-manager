@@ -61,6 +61,9 @@ export default class Cart {
     return this.#items.slice(offset);
   };
 
+  getItemByProductId = (productId) =>
+    this.#items.find((item) => item.productId === productId);
+
   /**
    * Adds new item into the Cart.
    *
