@@ -76,7 +76,7 @@ export const updateCart = async (req, res) => {
     status: "Error",
     error: "Method not implemented yet.",
   };
-  let returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
 
   res.status(returnStatus).json(returnObject).end();
 };
@@ -142,7 +142,7 @@ export const updateCartItem = async (req, res) => {
     status: "Error",
     error: "Method not implemented yet.",
   };
-  let returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
 
   res.status(returnStatus).json(returnObject).end();
 };
@@ -152,7 +152,7 @@ export const deleteCartItem = async (req, res) => {
     status: "Error",
     error: "Method not implemented yet.",
   };
-  let returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
 
   res.status(returnStatus).json(returnObject).end();
 };
@@ -162,7 +162,7 @@ export const clearCartItems = async (req, res) => {
     status: "Error",
     error: "Method not implemented yet.",
   };
-  let returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
 
   res.status(returnStatus).json(returnObject).end();
 };
