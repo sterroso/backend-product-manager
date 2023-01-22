@@ -1,14 +1,18 @@
-import app, { PORT } from "./app.js";
+import dotenv from "dotenv";
 import { Server } from "socket.io";
+import app from "./app.js";
+import "./src/config/mongodb.js";
 import ProductManager from "./src/ProductManager.js";
 import Product from "./src/Product.js";
+
+dotenv.config();
 
 const productsPath = "public/productos.json";
 
 const productManager = new ProductManager(productsPath);
 
-const server = app.listen(PORT, () =>
-  console.log(`Express Server listening on port ${PORT} 🤖`)
+const server = app.listen(process.env.PORT || 8080, () =>
+  console.log(`🤖 Express Server listening on port ${process.env.PORT}`)
 );
 
 server.on("error", (err) => console.error(err));

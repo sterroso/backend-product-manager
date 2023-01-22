@@ -1,0 +1,21 @@
+use("ecommerce");
+
+db.createCollection("users");
+
+db.users.insertMany([
+  { firstName: "Sergio", lastName: "Terroso Cabrera", userName: "sterroso", email: "sterroso@test.co", gender: "male", dateOfBirth: "1977-10-20" },
+  { firstName: "Gloria", middleName: "Luz", lastName: "Herrera Trujillo", userName: "gherrera", email: "gherrera@test.co", gender: "female", dateOfBirth: "1978-09-03" },
+  { firstName: "Genaro", middleName: "Daniel", lastName: "Gómez López", userName: "gdgomez", email: "gdgomez@test.co", gender: "male", dateOfBirth: "1981-12-11" },
+  { firstName: "Sandra", middleName: "Delicia", lastName: "Del Carpio Domínguez", userName: "sdelcarpio", email: "sdelcarpio@test.co", gender: "female", dateOfBirth: "1977-10-17" },
+  { firstName: "Juan", lastName: "Fulano", userName: "jfulano", email: "jfulano@test.co", gender: "male", dateOfBirth: "1979-05-03" },
+  { firstName: "Janeth", lastName: "Sultano", userName: "jsultano", email: "jsultano@test.co", gender: "female", dateOfBirth: "1992-09-26" },
+  { firstName: "Manuela", lastName: "Perengano", userName: "mperengano", email: "mperengano@test.co", gender: "female", dateOfBirth: "1999-08-11" }
+]);
+
+db.users.find({});
+
+db.users.findOne({ userName: "gdgomez" }, { _id: 1 });
+
+db.users.deleteMany({});
+
+db.users.drop();
