@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
+import MongooseDelete from "mongoose-delete";
 
-const schema = new Schema(
+export const userSchema = new Schema(
   {
     email: {
       type: String,
@@ -55,6 +56,12 @@ const schema = new Schema(
   }
 );
 
-const UserModel = model("users", schema);
+userSchema.plugin(MongooseDelete, {
+  deletedAt: true,
+  overrideMethods: "all",
+  indexFields: ["deleted", "deletedAt"],
+});
+
+const UserModel = model("users", userSchema);
 
 export default UserModel;

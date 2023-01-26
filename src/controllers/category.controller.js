@@ -1,4 +1,4 @@
-import * as DataProvider from "../dao/category.mongo-dao.js";
+import * as CategoryProvider from "../dao/category.mongo-dao.js";
 import { StatusString, StatusCode } from "../constants/constants.js";
 
 export const getCategories = async (req, res) => {
@@ -6,7 +6,7 @@ export const getCategories = async (req, res) => {
   let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
 
   try {
-    const categories = await DataProvider.getCategories();
+    const categories = await CategoryProvider.getCategories();
 
     if (categories.length === 0) {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
@@ -33,7 +33,7 @@ export const getCategory = async (req, res) => {
   const { categoryId } = req.params;
 
   try {
-    const category = await DataProvider.getCategory(categoryId);
+    const category = await CategoryProvider.getCategory(categoryId);
 
     if (!category) {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
@@ -61,14 +61,14 @@ export const createCategory = async (req, res) => {
 
   try {
     const deletedCategoryWithMatchingName =
-      await DataProvider.getDeletedCategory({ name: body.name });
+      await CategoryProvider.getDeletedCategory({ name: body.name });
 
     if (!deletedCategoryWithMatchingName) {
-      const newCategory = await DataProvider.createCategory(body);
+      const newCategory = await CategoryProvider.createCategory(body);
 
       returnObject.category = newCategory;
     } else {
-      const restoredCategory = await DataProvider.restoreCategory(
+      const restoredCategory = await CategoryProvider.restoreCategory(
         deletedCategoryWithMatchingName._id
       );
 
@@ -96,7 +96,7 @@ export const updateCategory = async (req, res) => {
   const { body } = req;
 
   try {
-    const updatedCategory = await DataProvider.updateCategory(categoryId, body);
+    const updatedCategory = await CategoryProvider.updateCategory(categoryId, body);
 
     returnObject.status = StatusString.SUCCESS;
     returnObject.category = updatedCategory;
@@ -117,7 +117,7 @@ export const deleteCategory = async (req, res) => {
   const { categoryId } = req.params;
 
   try {
-    const deleteResult = await DataProvider.deleteCategory(categoryId);
+    const deleteResult = await CategoryProvider.deleteCategory(categoryId);
 
     returnObject.status = StatusString.DELETED;
     returnObject.result = deleteResult;

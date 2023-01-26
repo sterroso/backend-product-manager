@@ -1,8 +1,8 @@
 import ProductModel from "../models/product.model.js";
 
-export const getProducts = async () => {
+export const getProducts = async (query, options) => {
   try {
-    const allProducts = await ProductModel.find();
+    const allProducts = await ProductModel.paginate(query, options);
 
     return allProducts;
   } catch (error) {

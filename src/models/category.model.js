@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import mongooseDelete from "mongoose-delete";
 
-const schema = new Schema(
+export const categorySchema = new Schema(
   {
     name: {
       type: String,
@@ -18,8 +18,12 @@ const schema = new Schema(
   }
 );
 
-schema.plugin(mongooseDelete, { deletedAt: true, overrideMethods: "all" });
+categorySchema.plugin(mongooseDelete, {
+  deletedAt: true,
+  overrideMethods: "all",
+  indexFields: ["deleted", "deletedAt"],
+});
 
-const CategoryModel = model("categories", schema);
+const CategoryModel = model("categories", categorySchema);
 
 export default CategoryModel;

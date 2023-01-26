@@ -1,12 +1,12 @@
 export const StatusString = {
-  OK: "Ok",
-  SUCCESS: "Success",
-  CREATED: "Created",
-  DELETED: "Deleted",
-  EMPTY_RESULTSET: "Empty resultset",
-  BAD_REQUEST: "Bad request",
-  ERROR: "Error",
-  FAIL: "Fail",
+  OK: "ok",
+  SUCCESS: "success",
+  CREATED: "created",
+  DELETED: "deleted",
+  EMPTY_RESULTSET: "empty resultset",
+  BAD_REQUEST: "bad request",
+  ERROR: "error",
+  FAIL: "fail",
 };
 
 export const StatusCode = {
@@ -72,4 +72,14 @@ export const StatusCode = {
     NOT_EXTENDED: 510,
     NETWORK_AUTHENTICATION_REQUIRED: 511,
   },
+};
+
+export const CustomPaginationLabels = {
+  totalDocs: false,
+  docs: "payload",
+  limit: false,
+  offset: false,
+  totalPages: false,
+  pagingCounter: false,
+  meta: false,
 };

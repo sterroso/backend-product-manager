@@ -1,13 +1,13 @@
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
+import UserModel from "./user.model.js";
 
-const schema = new Schema(
+export const messageSchema = new Schema(
   {
     user: {
-      type: String,
+      type: Schema.Types.ObjectId,
       required: true,
-      trim: true,
-      minLength: 5,
+      ref: UserModel,
     },
     message: {
       type: String,
@@ -21,12 +21,12 @@ const schema = new Schema(
   }
 );
 
-schema.plugin(MongooseDelete, {
+messageSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: "all",
   indexFields: ["deleted", "deletedAt"],
 });
 
-const MessageModel = model("messages", schema);
+const MessageModel = model("messages", messageSchema);
 
 export default MessageModel;

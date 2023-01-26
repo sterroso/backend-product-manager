@@ -1,7 +1,8 @@
-import { Schema, model, Decimal128, ObjectId } from "mongoose";
+import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
+import MongoosePaginate from "mongoose-paginate-v2";
 
-const schema = new Schema(
+export const productSchema = new Schema(
   {
     code: {
       type: String,
@@ -27,11 +28,11 @@ const schema = new Schema(
       trim: true,
     },
     category: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       required: true,
     },
     price: {
-      type: Decimal128,
+      type: Schema.Types.Decimal128,
       required: true,
       min: 0,
       default: 0,
@@ -56,12 +57,14 @@ const schema = new Schema(
   }
 );
 
-schema.plugin(MongooseDelete, {
+productSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: "all",
   indexFields: ["deleted", "deletedAt"],
 });
 
-const ProductModel = model("product", schema);
+productSchema.plugin(MongoosePaginate);
+
+const ProductModel = model("product", productSchema);
 
 export default ProductModel;

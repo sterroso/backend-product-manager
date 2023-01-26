@@ -1,4 +1,4 @@
-import * as DataProvider from "../dao/message.mongo-dao.js";
+import * as MessageProvider from "../dao/message.mongo-dao.js";
 
 export const getMessages = async (req, res) => {};
 
