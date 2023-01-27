@@ -37,7 +37,8 @@ export const getProducts = async (req, res) => {
   let priceSortParam = sanitize(sort);
 
   if (["asc", "desc"].includes(priceSortParam)) {
-    options.sort = `{ price: ${priceSortParam === "asc" ? "1" : "-1"} }`;
+    options.sort = {};
+    options.sort.price = priceSortParam === "asc" ? 1 : -1;
   }
 
   let categoryFilter = sanitize(category);
@@ -138,6 +139,7 @@ export const createProduct = async (req, res) => {
     } else {
       const restoredProduct = await ProductProvider.restoreProduct(body.code);
 
+      returnObject.status = StatusString.SUCCESS;
       returnObject.payload = restoredProduct;
     }
   } catch (error) {
@@ -181,7 +183,7 @@ export const deleteProduct = async (req, res) => {
   try {
     const deletedProductResult = await ProductProvider.deleteProduct(productId);
 
-    returnObject.status = StatusString.DELETED;
+    returnObject.status = StatusString.SUCCESS;
     returnObject.payload = deletedProductResult;
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
