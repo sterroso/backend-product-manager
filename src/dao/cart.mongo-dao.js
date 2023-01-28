@@ -2,7 +2,9 @@ import CartModel from "../models/cart.model.js";
 
 export const getCarts = async () => {
   try {
-    const carts = await CartModel.find({ deleted: false });
+    const carts = await CartModel.find({ deleted: false }).populate(
+      "items.productId"
+    );
 
     return carts;
   } catch (error) {
@@ -48,6 +50,35 @@ export const createCart = async () => {
   } catch (error) {
     throw new Error(error.message);
   }
+};
+
+export const updateCart = async (cartId, cartItems) => {
+  try {
+    const cartToBeUpdated = await CartModel.findById(cartId);
+
+    if (!cartToBeUpdated) throw new Error("Cart not found");
+
+    const updatedCart = await CartModel.findByIdAndUpdate(
+      cartId,
+      { $set: { items: cartItems } },
+      { new: true },
+      (error, cart) => {
+        if (error) throw new Error(error.message);
+
+        cart.count = this.items.reduce(
+          (count, item) => (count += item.quantity),
+          0
+        );
+
+        cart.total = this.items.reduce(
+          (sum, item) => (sum += item.quantity * item.salesPrice),
+          0
+        );
+
+        cart.save();
+      }
+    );
+  } catch (error) {}
 };
 
 export const restoreCart = async (cartId) => {
@@ -124,7 +155,7 @@ export const addCartItem = async (cartId, productItem) => {
       cart.save();
     });
 
-    return cartToBeUpdated;
+    return await CartModel.findById(cartId);
   } catch (error) {
     throw new Error(error.message);
   }
@@ -165,7 +196,7 @@ export const updateCartItem = async (cartId, productItem) => {
       cart.save();
     });
 
-    return cartToBeUpdated;
+    return await CartModel.findById(cartId);
   } catch (error) {
     throw new Error(error.message);
   }
@@ -173,26 +204,26 @@ export const updateCartItem = async (cartId, productItem) => {
 
 export const clearCartItems = async (cartId) => {
   try {
-    const cartToBeCleared = await CartModel.findById(cartId);
+    const clearedCart = await CartModel.findByIdAndUpdate(
+      cartId,
+      { $set: { items: [], count: 0, total: 0 } },
+      { new: true }
+    );
 
-    if (!cartToBeCleared) throw new Error("Cart not found");
-
-    cartToBeCleared.items = [];
-    cartToBeCleared.count = 0;
-    cartToBeCleared.total = 0;
-    await cartToBeCleared.save();
-
-    return cartToBeCleared;
+    return clearedCart;
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-export const removeCartItem = async (cartId, productId) => {
+export const deleteCartItem = async (cartId, productId) => {
   try {
     const cartToBeUpdated = await CartModel.findById(cartId);
 
     if (!cartToBeUpdated) throw new Error("Cart not found.");
+
+    if (!cartToBeUpdated.items.find((item) => item.productId === productId))
+      throw new Error("Cart item not found.");
 
     cartToBeUpdated.items = cartToBeUpdated.items.filter(
       (item) => item.productId != productId
@@ -212,7 +243,7 @@ export const removeCartItem = async (cartId, productId) => {
       cart.save();
     });
 
-    return cartToBeUpdated;
+    return await CartModel.findById(cartId);
   } catch (error) {
     throw new Error(error.message);
   }

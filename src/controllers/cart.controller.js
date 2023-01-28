@@ -1,6 +1,7 @@
 import * as CartProvider from "../dao/cart.mongo-dao.js";
 import { getProduct } from "../dao/product.mongo-dao.js";
 import { StatusCode, StatusString } from "../constants/constants.js";
+import sanitize from "mongo-sanitize";
 
 export const getCarts = async (req, res) => {
   const returnObject = {};
@@ -72,11 +73,35 @@ export const createCart = async (req, res) => {
 };
 
 export const updateCart = async (req, res) => {
-  const returnObject = {
-    status: "Error",
-    error: "Method not implemented yet.",
-  };
-  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
+  const returnObject = {};
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+
+  const { cartId } = req.params;
+
+  const { cartItems } = req.body;
+
+  if (!cartItems || cartItems.length < 1) {
+    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = "Provide an array with, at least, one cart item.";
+  } else {
+    try {
+      const updatedCart = await CartProvider.updateCart(cartId, cartItems);
+
+      if (!updatedCart) {
+        returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+        returnObject.status = StatusString.ERROR;
+        returnObject.error = "Cart could not be updated.";
+      } else {
+        returnObject.status = StatusString.SUCCESS;
+        returnObject.payload = updatedCart;
+      }
+    } catch (error) {
+      returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+      returnObject.status = StatusString.ERROR;
+      returnObject.error = error.message;
+    }
+  }
 
   res.status(returnStatus).json(returnObject).end();
 };
@@ -138,31 +163,99 @@ export const addCartItem = async (req, res) => {
 };
 
 export const updateCartItem = async (req, res) => {
-  const returnObject = {
-    status: "Error",
-    error: "Method not implemented yet.",
-  };
-  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
+  const returnObject = {};
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
 
+  const { cartId, productId } = req.params;
+
+  const { quantity, salesPrice } = req.body;
+
+  const productItem = {
+    productId,
+  };
+
+  if (quantity) {
+    productItem.quantity = sanitize(quantity);
+  }
+
+  if (salesPrice) {
+    productItem.salesPrice = sanitize(salesPrice);
+  }
+
+  try {
+    const updatedProduct = await CartProvider.updateCartItem(
+      cartId,
+      productItem
+    );
+
+    if (!updatedProduct) {
+      returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+      returnObject.status = StatusString.ERROR;
+      returnObject.error = "Object not updated.";
+    } else {
+      returnObject.status = StatusString.SUCCESS;
+      returnObject.payload = updatedProduct;
+    }
+  } catch (error) {
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = error.message;
+  }
   res.status(returnStatus).json(returnObject).end();
 };
 
 export const deleteCartItem = async (req, res) => {
-  const returnObject = {
-    status: "Error",
-    error: "Method not implemented yet.",
-  };
-  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
+  const returnObject = {};
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+
+  const { cartId, productId } = req.params;
+
+  try {
+    const deleteConfirmation = await CartProvider.deleteCartItem(
+      cartId,
+      productId
+    );
+
+    if (!deleteConfirmation) {
+      returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+
+      (returnObject.status = StatusString.ERROR),
+        (returnObject.error = "Cart item could not be deleted.");
+    }
+  } catch (error) {
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = error.message;
+  }
 
   res.status(returnStatus).json(returnObject).end();
 };
 
 export const clearCartItems = async (req, res) => {
-  const returnObject = {
-    status: "Error",
-    error: "Method not implemented yet.",
-  };
-  let returnStatus = StatusCode.SERVER_ERROR.NOT_IMPLEMENTED;
+  const returnObject = {};
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+
+  const { cartId } = req.params;
+
+  if (!cartId) {
+    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = "cartId parameter not provided.";
+  } else {
+    try {
+      const clearedCart = await CartProvider.clearCartItems(sanitize(cartId));
+
+      returnObject.status = StatusString.SUCCESS;
+      returnObject.payload = clearedCart;
+    } catch (error) {
+      returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+
+      returnObject.status = StatusString.ERROR;
+      returnObject.error = error.message;
+    }
+  }
 
   res.status(returnStatus).json(returnObject).end();
 };

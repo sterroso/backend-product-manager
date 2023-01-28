@@ -3,7 +3,8 @@ import * as ProductProvider from "../dao/product.mongo-dao.js";
 import {
   StatusString,
   StatusCode,
-  CustomPaginationLabels,
+  CustomProductPaginationLabels,
+  NoProductPaginationLabels,
 } from "../constants/constants.js";
 
 export const getProducts = async (req, res) => {
@@ -14,13 +15,13 @@ export const getProducts = async (req, res) => {
 
   const options = {};
 
-  options.customLabels = CustomPaginationLabels;
-
   const { limit, page, sort, category, status } = req.query;
 
   const limitNumber = Number(limit ?? 0);
 
   if (!isNaN(limitNumber) && limitNumber > 0 && limitNumber % 1 === 0) {
+    options.customLabels = CustomProductPaginationLabels;
+
     options.limit = limitNumber;
 
     const pageNumber = Number(page ?? 0);
@@ -31,6 +32,7 @@ export const getProducts = async (req, res) => {
       options.page = 1;
     }
   } else {
+    options.customLabels = NoProductPaginationLabels;
     options.pagination = false;
   }
 

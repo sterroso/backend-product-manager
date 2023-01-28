@@ -1,16 +1,17 @@
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
+import ProductModel from "./product.model.js";
 
 export const cartItemSchema = new Schema({
   productId: {
     type: Schema.Types.ObjectId,
     required: true,
+    ref: ProductModel,
   },
   salesPrice: {
     type: Schema.Types.Decimal128,
     required: true,
     min: 0,
-    default: 0.99,
   },
   quantity: {
     type: Number,
