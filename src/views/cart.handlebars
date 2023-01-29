@@ -1,0 +1,59 @@
+<header>
+  <div class="brand">
+    <img
+      class="logo"
+      src="/public/img/products_icon_128x128.png"
+      alt="Logotipo de productos"
+    />
+    <h1 class="main-title">Carrito de Compras</h1>
+  </div>
+
+  <nav id="nav">
+    <ul class="main-menu">
+      <li class="main-menu-item">
+        <a href="/products" class="link">Explorar Productos</a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <h2>Carrito de Compras</h2>
+  {{#if cart}}
+    <p class="cart-id">Cart ID: {{cart._id}}</p>
+    {{#if cart.items.length}}
+      <ul class="cartItem-list">
+        {{#each cart.items}}
+          <li class="cartItem">
+            <div class="cartItem-container">
+              <p class="cartItem-title">Title:
+                <span class="cartItem-titleValue">{{this.title}}</span></p>
+              <p class="cartItem-description">Description:
+                <span
+                  class="cartItem-descriptionValue"
+                >{{this.description}}</span></p>
+              <p class="cartItem-price">Price:
+                <span class="cartItem-priceValue">{{this.salesPrice}}</span></p>
+              <p class="cartItem-quantity">Quantity:
+                <span
+                  class="cartItem-quantityValue"
+                >{{this.quantity}}</span></p>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
+    {{/if}}
+    <p class="cartCount">Items count: {{cart.count}}</p>
+    <p class="cartTotal">Cart Total: {{cart.total}}</p>
+  {{/if}}
+</main>
+
+<footer>
+  <div class="author">
+    <p>Autor:
+      <a class="email-link" href="mailto:sergio.terroso@gmail.com">Sergio
+        Terroso</a></p>
+  </div>
+</footer>
+
+<script src="/public/js/CartViewer.js"></script>

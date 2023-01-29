@@ -5,24 +5,84 @@
           src="/public/img/products_icon_128x128.png"
           alt="Logotipo de productos"
         />
-        <h1 class="main-title">Productos</h1>
+        <h1 class="main-title">Inicio</h1>
       </div>
 
       <nav id="nav">
         <ul class="main-menu">
           <li class="main-menu-item">
-            <a href="/realtimeproducts" class="link">Productos en tiempo real</a>
+            <a href="/products/" class="link">Explorador de productos</a>
           </li>
         </ul>
       </nav>
     </header>
 
     <main>
-      <div id="products">
-        <h2>Inventario de Productos</h2>
-        <input type="button" id="load-products-button" value="Cargar productos" />
-        <ul id="products-list"></ul>
-      </div>
+      <h2>Datos del usuario</h2>
+      <form id="datosDelUsuario" action="/users/">
+        <div>
+          <label for="userEmail">E-mail:</label>
+          <input
+            type="email"
+            id="userEmail"
+            name="userEmail"
+            minLength="9"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="userPassword">Contraseña:</label>
+          <input
+            type="password"
+            id="userPassword"
+            name="userPassword"
+            minLength="8"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="userFirstName">Nombre(s):</label>
+          <input
+            type="text"
+            id="userFirstName"
+            name="userFirstName"
+            minLength="3"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="userLastName">Apellido(s):</label>
+          <input
+            type="text"
+            id="userLastName"
+            name="userLastName"
+            minLength="3"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="userDateOfBirth">Fecha de Nacimiento:</label>
+          <input type="date" id="userDateOfBirth" name="userDateOfBirth" required />
+        </div>
+
+        <div>
+          <label for="userGender">Sexo:</label>
+          <select id="userGender" name="userGender" required>
+            <option value="femenino">Femenino</option>
+            <option value="masculino">Masculino</option>
+            <option value="otro">Otro</option>
+            <option value="no especificado" selected>No especificado</option>
+          </select>
+        </div>
+
+        <div>
+          <input type="button" value="Entrar" id="loginButton" />
+        </div>
+      </form>
     </main>
 
     <footer>
@@ -32,6 +92,3 @@
             Terroso</a></p>
       </div>
     </footer>
-
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="/public/js/ProductsLoader.js"></script>
