@@ -5,23 +5,21 @@
           src="/public/img/products_icon_128x128.png"
           alt="Logotipo de productos"
         />
-        <h1 class="main-title">Inicio</h1>
+        <h1 class="main-title">{{title}}</h1>
       </div>
 
       <nav id="nav">
         <ul class="main-menu">
           <li class="main-menu-item">
-            <a href="/products/?limit=5">Explorador de Productos</a>
-            <a href="/signup" class="link">Registro</a>
-            <a href="/login" class="link">Acceso</a>
+            <a href="/" class="link">Inicio</a>
           </li>
         </ul>
       </nav>
     </header>
 
     <main>
-      <h2>Datos del usuario</h2>
-      <form id="datosDelUsuario" action="/users/">
+      <h2>Registro de Nuevo Usuario</h2>
+      <form id="userSignup">
         <div>
           <label for="userEmail">E-mail:</label>
           <input
@@ -39,7 +37,7 @@
             type="password"
             id="userPassword"
             name="userPassword"
-            minLength="8"
+            minLength="6"
             required
           />
         </div>
@@ -82,7 +80,7 @@
         </div>
 
         <div>
-          <input type="button" value="Entrar" id="loginButton" />
+          <input type="button" value="Registrarme" id="signupButton" />
         </div>
       </form>
     </main>
@@ -94,3 +92,5 @@
             Terroso</a></p>
       </div>
     </footer>
+
+    <script src="/public/js/UserSignup.js"></script>

@@ -121,7 +121,7 @@ export const getCartView = async (req, res) => {
   const { cartId } = req.params;
 
   try {
-    const result = await CartProvider.getCart(cartId);
+    const result = await CartProvider.getCartById(cartId);
     const cart = result.toJSON();
 
     if (cart) {
@@ -163,3 +163,13 @@ export const updateCartItem = async (req, res) => {
     console.error("Cart Item could not be updated.");
   }
 };
+
+export const userSignup = (req, res) => {
+  res.render("signup", { title: "Registrar Nuevo Usuario" });
+};
+
+export const userLogin = (req, res) => {
+  res.render("login", { title: "Entrar" });
+};
+
+export const userLogout = (req, res) => {};

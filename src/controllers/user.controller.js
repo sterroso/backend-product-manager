@@ -53,6 +53,42 @@ export const getUser = async (req, res) => {
   res.status(returnStatus).json(returnObject).end();
 };
 
+export const getUserByEmail = async (req, res) => {
+  const returnObject = {};
+  const returnStatus = StatusCode.SUCCESSFUL.ACCEPTED;
+
+  const { userEmail, userPassword } = req.body;
+
+  try {
+    const user = await UserProvider.getUserByEmail(userEmail);
+
+    if (user) {
+      if (user.password === userPassword) {
+        returnObject.status = StatusString.SUCCESS;
+        returnObject.payload = {
+          user: {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            middleName: user.middleName,
+            lastName: user.lastName,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+          },
+        };
+      } else {
+        returnStatus = StatusCode.CLIENT_ERROR.UNAUTHORIZED;
+        returnObject.status = StatusString.ERROR;
+        returnObject.error = "User not found.";
+      }
+    }
+  } catch (error) {
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = error.message;
+  }
+};
+
 export const createUser = async (req, res) => {
   const returnObject = {};
   let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;

@@ -1,51 +1,51 @@
-<header>
-  <div class="brand">
-    <img
-      class="logo"
-      src="/public/img/products_icon_128x128.png"
-      alt="Logotipo de productos"
-    />
-    <h1 class="main-title">Carrito de Compras</h1>
-  </div>
+    <header>
+      <div class="brand">
+        <img
+          class="logo"
+          src="/public/img/products_icon_128x128.png"
+          alt="Logotipo de productos"
+        />
+        <h1 class="main-title">Carrito de Compras</h1>
+      </div>
 
-  <nav id="nav">
-    <ul class="main-menu">
-      <li class="main-menu-item">
-        <a href="/products/?priceSort=desc&limit=5" class="link">Explorar Productos</a>
-      </li>
-    </ul>
-  </nav>
-</header>
-
-<main>
-  <h2>Carrito de Compras</h2>
-  {{#if cart}}
-    <div class="cart-container">
-    {{#if cart.items.length}}
-      <ul class="cart-item-list">
-        {{#each cart.items}}
-          <li class="cart-item">
-            <div class="cart-item-container">
-              <p class="cart-item-title">{{this.productId.title}}</p>
-              <p class="cart-item-price">{{this.salesPrice}}</p>
-              <p class="cart-item-quantity">{{this.quantity}}</p>
-            </div>
+      <nav id="nav">
+        <ul class="main-menu">
+          <li class="main-menu-item">
+            <a href="/products/?priceSort=desc&limit=5" class="link">Explorar Productos</a>
           </li>
-        {{/each}}
-      </ul>
-    {{/if}}
-    <p class="cartCount">{{cart.count}} items</p>
-    <p class="cartTotal">Total: {{cart.total}}</p>
-    </div>
-  {{/if}}
-</main>
+        </ul>
+      </nav>
+    </header>
 
-<footer>
-  <div class="author">
-    <p>Autor:
-      <a class="email-link" href="mailto:sergio.terroso@gmail.com">Sergio
-        Terroso</a></p>
-  </div>
-</footer>
+    <main>
+      <h2>Carrito de Compras</h2>
+      {{#if cart}}
+        <div class="cart-container">
+        {{#if cart.items.length}}
+          <ul class="cart-item-list">
+            {{#each cart.items}}
+              <li class="cart-item">
+                <div class="cart-item-container">
+                  <p class="cart-item-title">{{this.productId.title}}</p>
+                  <p class="cart-item-price">{{this.salesPrice}}</p>
+                  <p class="cart-item-quantity">{{this.quantity}}</p>
+                </div>
+              </li>
+            {{/each}}
+          </ul>
+        {{/if}}
+        <p class="cartCount">{{cart.count}} items</p>
+        <p class="cartTotal">Total: {{cart.total}}</p>
+        </div>
+      {{/if}}
+    </main>
 
-<script src="/public/js/CartViewer.js"></script>
+    <footer>
+      <div class="author">
+        <p>Autor:
+          <a class="email-link" href="mailto:sergio.terroso@gmail.com">Sergio
+            Terroso</a></p>
+      </div>
+    </footer>
+
+    <script src="/public/js/CartViewer.js"></script>

@@ -12,7 +12,7 @@ export const getCarts = async () => {
   }
 };
 
-export const getCart = async (cartId) => {
+export const getCartById = async (cartId) => {
   try {
     const cart = await CartModel.findById(
       cartId,
@@ -21,6 +21,23 @@ export const getCart = async (cartId) => {
     ).populate("items.productId");
 
     return cart;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const getCartByUserId = async (userId) => {
+  try {
+    const cart = await CartModel.findOne({
+      user: userId,
+      deleted: false,
+    }).populate("items.productId");
+
+    if (cart) {
+      return cart;
+    }
+
+    throw new Error("User has no carts.");
   } catch (error) {
     throw new Error(error.message);
   }

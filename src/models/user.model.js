@@ -43,7 +43,6 @@ export const userSchema = new Schema(
     password: {
       type: String,
       required: true,
-      minLength: 9,
     },
     verifiedEmail: {
       type: Boolean,

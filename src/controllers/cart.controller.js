@@ -26,14 +26,14 @@ export const getCarts = async (req, res) => {
   res.status(returnStatus).json(returnObject).end();
 };
 
-export const getCart = async (req, res) => {
+export const getCartById = async (req, res) => {
   const returnObject = {};
   let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
 
   const { cartId } = req.params;
 
   try {
-    const cart = await CartProvider.getCart(cartId);
+    const cart = await CartProvider.getCartById(cartId);
 
     if (!cart) {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
@@ -44,6 +44,26 @@ export const getCart = async (req, res) => {
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = error.message;
+  }
+
+  res.status(returnStatus).json(returnObject).end();
+};
+
+export const getCartByUserId = async (req, res) => {
+  const returnObject = {};
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+
+  const { userId } = req.params;
+
+  try {
+    const cart = await CartProvider.getCartByUserId(userId);
+
+    returnObject.status = StatusString.SUCCESS;
+    returnObject.payload = cart;
+  } catch (error) {
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
     returnObject.status = StatusString.ERROR;
     returnObject.error = error.message;
   }

@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import ProductModel from "./product.model.js";
+import UserModel from "./user.model.js";
 
 export const cartItemSchema = new Schema({
   productId: {
@@ -34,6 +35,11 @@ export const cartSchema = new Schema(
       required: true,
       min: 0,
       default: 0,
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: UserModel,
     },
     items: [{ type: cartItemSchema }],
   },

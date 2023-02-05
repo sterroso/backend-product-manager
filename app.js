@@ -1,10 +1,16 @@
 import express from "express";
+import dotenv from "dotenv";
+import cookie from "cookie-parser";
+import session from "express-session";
+import mongoStore from "connect-mongo";
+import { engine } from "express-handlebars";
 import ProductsRouter from "./src/routes/products.router.js";
 import CartsRouter from "./src/routes/carts.router.js";
 import CategoriesRouter from "./src/routes/category.router.js";
 import UsersRouter from "./src/routes/users.router.js";
 import ViewsRouter from "./src/routes/views.router.js";
-import { engine } from "express-handlebars";
+
+dotenv.config();
 
 const { pathname: root } = new URL("./public", import.meta.url);
 
@@ -14,6 +20,23 @@ const app = express();
 app.use("/public", express.static(root));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookie());
+app.use(
+  session({
+    store: mongoStore.create({
+      mongoUrl:
+        process.env.PRODUCT_MANAGER_API_MONGODB_CLOUD_ATLAS_CONNECTION_STRING,
+      options: {
+        userNewUrlParse: true,
+        useUnifiedTopology: true,
+      },
+    }),
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 120000 },
+  })
+);
 
 // Configuración express-handlebars
 app.engine(".hbs", engine({ extname: ".hbs" }));
