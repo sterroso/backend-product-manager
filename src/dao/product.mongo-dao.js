@@ -15,7 +15,7 @@ export const getProduct = async (productId) => {
     const requestedProduct = await ProductModel.findOne({
       _id: productId,
       deleted: false,
-    });
+    }).lean();
 
     return requestedProduct;
   } catch (error) {

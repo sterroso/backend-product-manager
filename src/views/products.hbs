@@ -1,0 +1,59 @@
+    <header>
+      <div class="brand">
+        <img
+          class="logo"
+          src="/public/img/products_icon_128x128.png"
+          alt="Logotipo de productos"
+        />
+        <h1 class="main-title">Explorador de Productos</h1>
+      </div>
+
+      <nav id="nav">
+        <ul class="main-menu">
+          <li class="main-menu-item">
+            <a href="/" class="link">Inicio</a>
+            <a href="/carts/63cc90aa3eac6a538b1aed32" class="link">Carrito</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <h2>Lista de Productos</h2>
+
+      {{#if payload}}
+      <div class="products-container">
+        <ul class="products-list">
+          {{#each payload}}
+          <li class="product-item">
+            <div class="product-item-code">{{this.code}}</div>
+            <div class="product-item-title">{{this.title}}</div>
+            <div class="product-item-description">{{this.description}}</div>
+            <div class="product-item-price">Precio: {{this.price}}</div>
+            <a class="link product-detail-link" href="/products/{{this._id}}">Detalle</a>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+      {{/if}}
+
+      <div class="product-page-navigation">
+        {{#if hasPrevPage}}
+        <a class="link prev-page-link" href="{{prevLink}}">Anterior</a>
+        {{/if}}
+
+        {{#if hasNextPage}}
+        <a class="link next-page-link" href="{{nextLink}}">Siguiente</a>
+        {{/if}}
+      </div>
+    </main>
+
+    <footer>
+      <div class="author">
+        <p>Autor:
+          <a class="link email-link" href="mailto:sergio.terroso@gmail.com">Sergio
+            Terroso</a></p>
+      </div>
+    </footer>
+
+    <script src="/public/js/ProductsViewer.js"></script>

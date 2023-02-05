@@ -14,7 +14,11 @@ export const getCarts = async () => {
 
 export const getCart = async (cartId) => {
   try {
-    const cart = await CartModel.findById(cartId, {}, { deleted: false });
+    const cart = await CartModel.findById(
+      cartId,
+      {},
+      { deleted: false }
+    ).populate("items.productId");
 
     return cart;
   } catch (error) {

@@ -11,4 +11,6 @@ router.get("/products/:productId", ViewsController.getProductDetailView);
 
 router.get("/carts/:cartId", ViewsController.getCartView);
 
+router.get("/carts/:cartId/products/:productId", ViewsController.addCartItem);
+
 export default router;

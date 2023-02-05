@@ -1,0 +1,57 @@
+    <header>
+      <div class="brand">
+        <img
+          class="logo"
+          src="/public/img/products_icon_128x128.png"
+          alt="Logotipo de productos"
+        />
+        <h1 class="main-title">Detalle de Producto</h1>
+      </div>
+
+      <nav id="nav">
+        <ul class="main-menu">
+          <li class="main-menu-item">
+            <a href="/" class="link">Inicio</a>
+            <a href="/products/" class="link">Explorar Productos</a>
+            <a href="/carts/63cc90aa3eac6a538b1aed32" class="link">Carrito</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      {{#if goBackLink}}
+      <p><a href="{{goBackLink}}">Regresar a lista de productos</a></p>
+      {{/if}}
+      {{#if product}}
+        <h2 class="product-detail product-title">{{product.title}}</h2>
+        <p class="product-detail product-description">{{product.description}}</p>
+        {{#if product.thumbnails.length}}
+          <ul class="product-detail product-thumbnails-list">
+            {{#each product.thumbnails}}
+              <li><img src="{{this}}" height="128" /></li>
+            {{/each}}
+          </ul>
+        {{/if}}
+        <p>{{product.price}}</p>
+        <form id="addToCartForm" method="POST" action="">
+          <input type="hidden" name="productIdField" id="productIdField" value="{{product._id}}" />
+          <input type="hidden" name="productSalesPriceField" id="productSalesPriceField" value="{{product.price}}" />
+          <input type="hidden" name="productStockField" id="productStockField" value="{{product.stock}}" />
+          <input type="button" id="productQuantityDecrementButton" value="-" />
+          <input type="number" id="productQuantityField" min="1" value="1" readonly />
+          <input type="button" id="productQuantityIncrementButton" value="+" />
+          <input type="submit" value="Agregar al Carrito" />
+        </form>
+      {{/if}}
+    </main>
+
+    <footer>
+      <div class="author">
+        <p>Autor:
+          <a class="email-link" href="mailto:sergio.terroso@gmail.com">Sergio
+            Terroso</a></p>
+      </div>
+    </footer>
+
+    <script src="/public/js/ProductDetailViewer.js"></script>
