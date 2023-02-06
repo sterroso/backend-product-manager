@@ -1,6 +1,17 @@
 import * as CategoryProvider from "../dao/category.mongo-dao.js";
 import { StatusString, StatusCode } from "../constants/constants.js";
 
+const formatSingleRecord = (record) => {
+  return {
+    id: record._id,
+    name: record.name,
+    related: record.related,
+  };
+};
+
+const formatRecordArray = (array) =>
+  array.map((record) => formatSingleRecord(record));
+
 export const getCategories = async (req, res) => {
   const returnObject = {};
   let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
@@ -13,7 +24,7 @@ export const getCategories = async (req, res) => {
       returnObject.status = StatusString.EMPTY_RESULTSET;
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.categories = categories;
+      returnObject.payload = formatRecordArray(categories);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -40,7 +51,7 @@ export const getCategory = async (req, res) => {
       returnObject.status = StatusString.EMPTY_RESULTSET;
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.category = category;
+      returnObject.payload = formatSingleRecord(category);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -66,21 +77,20 @@ export const createCategory = async (req, res) => {
     if (!deletedCategoryWithMatchingName) {
       const newCategory = await CategoryProvider.createCategory(body);
 
-      returnObject.category = newCategory;
+      returnObject.payload = formatSingleRecord(newCategory);
     } else {
       const restoredCategory = await CategoryProvider.restoreCategory(
         deletedCategoryWithMatchingName._id
       );
 
-      returnObject.category = restoredCategory;
+      returnObject.payload = formatSingleRecord(restoredCategory);
     }
 
     returnObject.status = StatusString.SUCCESS;
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
-    returnObject.status = StatusString.FAIL;
-
+    returnObject.status = StatusString.ERROR;
     returnObject.error = error.message || "Could not create a new category.";
   }
 
@@ -96,14 +106,17 @@ export const updateCategory = async (req, res) => {
   const { body } = req;
 
   try {
-    const updatedCategory = await CategoryProvider.updateCategory(categoryId, body);
+    const updatedCategory = await CategoryProvider.updateCategory(
+      categoryId,
+      body
+    );
 
     returnObject.status = StatusString.SUCCESS;
-    returnObject.category = updatedCategory;
+    returnObject.payload = formatSingleRecord(updatedCategory);
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
-    returnObject.status = StatusString.FAIL;
+    returnObject.status = StatusString.ERROR;
     returnObject.error = error.message || "Could not update category.";
   }
 
@@ -122,9 +135,9 @@ export const deleteCategory = async (req, res) => {
     returnObject.status = StatusString.DELETED;
     returnObject.result = deleteResult;
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
-    returnObject.status = StatusString.FAIL;
+    returnObject.status = StatusString.ERROR;
     returnObject.error = error.message || "Could not delete category.";
   }
 

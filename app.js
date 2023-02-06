@@ -8,6 +8,7 @@ import ProductsRouter from "./src/routes/products.router.js";
 import CartsRouter from "./src/routes/carts.router.js";
 import CategoriesRouter from "./src/routes/category.router.js";
 import UsersRouter from "./src/routes/users.router.js";
+import AuthRouter from "./src/routes/auth.router.js";
 import ViewsRouter from "./src/routes/views.router.js";
 
 dotenv.config();
@@ -23,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookie());
 app.use(
   session({
-    store: mongoStore.create({
+    store: new mongoStore({
       mongoUrl:
         process.env.PRODUCT_MANAGER_API_MONGODB_CLOUD_ATLAS_CONNECTION_STRING,
       options: {
@@ -34,7 +35,7 @@ app.use(
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 120000 },
+    cookie: { maxAge: 600000 },
   })
 );
 
@@ -44,6 +45,7 @@ app.set("view engine", ".hbs");
 app.set("views", "src/views");
 
 app.use("/", ViewsRouter);
+app.use("/api/auth/", AuthRouter);
 app.use("/api/users/", UsersRouter);
 app.use("/api/categories/", CategoriesRouter);
 app.use("/api/products/", ProductsRouter);

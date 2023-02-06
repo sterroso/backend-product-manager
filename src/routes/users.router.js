@@ -5,15 +5,15 @@ import * as CartController from "../controllers/cart.controller.js";
 
 const route = Router();
 
-route.get("/", auth, UserController.getUsers);
+route.get("/", UserController.getUsers);
 
-route.get("/:userId", auth, UserController.getUser);
+route.get("/:userId", UserController.getUser);
 
 route.get("/:userId/cart", auth, CartController.getCartByUserId);
 
-route.post("/", auth, UserController.createUser);
+route.post("/", UserController.createUser);
 
-route.put("/:userId", auth, UserController.updateUser);
+route.put("/:userId", UserController.updateUser);
 
 route.delete("/:userId", auth, UserController.deleteUser);
 

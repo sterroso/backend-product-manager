@@ -7,6 +7,23 @@ import {
   NoProductPaginationLabels,
 } from "../constants/constants.js";
 
+const formatSingleRecord = (record) => {
+  return {
+    id: record._id,
+    code: record.code,
+    title: record.title,
+    description: record.description,
+    category: record.category,
+    price: Number(record.price),
+    stock: record.stock,
+    status: record.status,
+    thumbnails: record.thumbnails,
+  };
+};
+
+const formatRecordsArray = (array) =>
+  array.map((record) => formatSingleRecord(record));
+
 export const getProducts = async (req, res) => {
   let returnObject = {};
   let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
@@ -77,6 +94,7 @@ export const getProducts = async (req, res) => {
       }
 
       returnObject = { ...result };
+      returnObject.payload = formatRecordsArray(result.payload);
       returnObject.status = StatusString.SUCCESS;
       returnObject.prevLink = hasPrevPage
         ? `${baseUrl}${path}?limit=${options.limit}&page=${result.prevPage}${linkBuilder}`
@@ -113,7 +131,7 @@ export const getProduct = async (req, res) => {
       returnObject.error = "Product not found.";
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = product;
+      returnObject.payload = formatSingleRecord(product);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -137,12 +155,12 @@ export const createProduct = async (req, res) => {
     if (!deletedProductWithMatchingCode) {
       const newProduct = await ProductProvider.createProduct(body);
 
-      returnObject.payload = newProduct;
+      returnObject.payload = formatSingleRecord(newProduct);
     } else {
       const restoredProduct = await ProductProvider.restoreProduct(body.code);
 
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = restoredProduct;
+      returnObject.payload = formatSingleRecord(restoredProduct);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -165,7 +183,7 @@ export const updateProduct = async (req, res) => {
     const updatedProduct = await ProductProvider.updateProduct(productId, body);
 
     returnObject.status = StatusString.SUCCESS;
-    returnObject.payload = updatedProduct;
+    returnObject.payload = formatSingleRecord(updatedProduct);
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
 

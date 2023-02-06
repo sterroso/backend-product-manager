@@ -7,7 +7,6 @@ export const userSchema = new Schema(
       type: String,
       required: true,
       minLength: 5,
-      maxLength: 99,
       unique: true,
       trim: true,
     },
@@ -15,7 +14,6 @@ export const userSchema = new Schema(
       type: String,
       required: true,
       minLength: 3,
-      maxLength: 36,
       trim: true,
     },
     middleName: {
@@ -27,7 +25,6 @@ export const userSchema = new Schema(
       type: String,
       required: true,
       minLength: 3,
-      maxLength: 72,
       trim: true,
     },
     dateOfBirth: {
@@ -49,11 +46,25 @@ export const userSchema = new Schema(
       required: true,
       default: false,
     },
+    isAdmin: {
+      type: Schema.Types.Boolean,
+      required: true,
+      default: false
+    },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
   }
 );
+
+userSchema.virtual("age").get((value, virtual, doc) => {
+  const currentDate = Date.now();
+  const dateDifferenceInMilliseconds = currentDate - doc.dateOfBirth;
+  const ageLapse = new Date(dateDifferenceInMilliseconds);
+
+  return Math.abs(ageLapse.getUTCFullYear() - 1970);
+});
 
 userSchema.plugin(MongooseDelete, {
   deletedAt: true,

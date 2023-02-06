@@ -11,7 +11,7 @@
       <nav id="nav">
         <ul class="main-menu">
           <li class="main-menu-item">
-            <a href="/products/?limit=5">Explorador de Productos</a>
+            <a href="/products/?limit=5" class="link">Explorador de Productos</a>
             <a href="/signup" class="link">Registro</a>
             <a href="/login" class="link">Acceso</a>
           </li>
@@ -20,71 +20,12 @@
     </header>
 
     <main>
-      <h2>Datos del usuario</h2>
-      <form id="datosDelUsuario" action="/users/">
-        <div>
-          <label for="userEmail">E-mail:</label>
-          <input
-            type="email"
-            id="userEmail"
-            name="userEmail"
-            minLength="9"
-            required
-          />
-        </div>
-
-        <div>
-          <label for="userPassword">Contraseña:</label>
-          <input
-            type="password"
-            id="userPassword"
-            name="userPassword"
-            minLength="8"
-            required
-          />
-        </div>
-
-        <div>
-          <label for="userFirstName">Nombre(s):</label>
-          <input
-            type="text"
-            id="userFirstName"
-            name="userFirstName"
-            minLength="3"
-            required
-          />
-        </div>
-
-        <div>
-          <label for="userLastName">Apellido(s):</label>
-          <input
-            type="text"
-            id="userLastName"
-            name="userLastName"
-            minLength="3"
-            required
-          />
-        </div>
-
-        <div>
-          <label for="userDateOfBirth">Fecha de Nacimiento:</label>
-          <input type="date" id="userDateOfBirth" name="userDateOfBirth" required />
-        </div>
-
-        <div>
-          <label for="userGender">Sexo:</label>
-          <select id="userGender" name="userGender" required>
-            <option value="femenino">Femenino</option>
-            <option value="masculino">Masculino</option>
-            <option value="otro">Otro</option>
-            <option value="no especificado" selected>No especificado</option>
-          </select>
-        </div>
-
-        <div>
-          <input type="button" value="Entrar" id="loginButton" />
-        </div>
-      </form>
+      <h2>E-commerce</h2>
+      <ul>
+        <li><a href="/products/?limit=5" class="link">Explorador de Productos</a></li>
+        <li><a href="/signup" class="link">Registro</a></li>
+        <li><a href="/login" class="link">Acceso</a></li>
+      </ul>
     </main>
 
     <footer>

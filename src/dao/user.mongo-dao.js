@@ -22,7 +22,10 @@ export const getUserById = async (userId) => {
 
 export const getUserByEmail = async (userEmail) => {
   try {
-    const user = await UserModel.findOne({ email: userEmail, deleted: false });
+    const user = await UserModel.findOne({
+      email: userEmail,
+      deleted: false,
+    }).lean();
 
     return user;
   } catch (error) {
@@ -32,6 +35,12 @@ export const getUserByEmail = async (userEmail) => {
 
 export const createUser = async (userData) => {
   try {
+    const userExists = await getUserByEmail(userData.email);
+
+    if (userExists) {
+      throw new Error("User already exists.");
+    }
+
     const newUser = await UserModel.create(userData);
 
     return newUser;
