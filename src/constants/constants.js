@@ -98,3 +98,5 @@ export const NoProductPaginationLabels = {
   pagingCounter: false,
   meta: false,
 };
+
+export const BCRYPT_PASSWORD_HASH_ROUNDS = 9;

@@ -1,6 +1,24 @@
 import * as ProductProvider from "../dao/product.mongo-dao.js";
 import * as CartProvider from "../dao/cart.mongo-dao.js";
-import { CustomProductPaginationLabels } from "../constants/constants.js";
+import * as UserProvider from "../dao/user.mongo-dao.js";
+import {
+  CustomProductPaginationLabels,
+  StatusCode,
+  StatusString,
+} from "../constants/constants.js";
+
+const formatUserRecord = (record) => {
+  return {
+    id: record._id,
+    email: record.email,
+    firstName: record.firstName,
+    middleName: record.middleName,
+    lastName: record.middleName,
+    gender: record.gender,
+    age: record.age,
+    role: record.isAdmin ? "admin" : "user",
+  };
+};
 
 export const getHomeView = (req, res) => {
   res.render("home", { title: "Inicio" });
@@ -164,12 +182,58 @@ export const updateCartItem = async (req, res) => {
   }
 };
 
-export const userSignup = (req, res) => {
+export const getUserSignupView = (req, res) => {
   res.render("signup", { title: "Registrar Nuevo Usuario" });
 };
 
-export const userLogin = (req, res) => {
+export const getUserLoginView = (req, res) => {
   res.render("login", { title: "Entrar" });
 };
 
+export const getGithubLoginView = (req, res) => {
+  res.render("githubLogin", { title: "Login with GitHub" });
+};
+
 export const userLogout = (req, res) => {};
+
+export const getNewUserWellcomeView = (req, res) => {
+  res.render("newUserWellcome", { title: "Bienvenid@!" });
+};
+
+export const getUserProfileView = async (req, res) => {
+  const returnObject = {};
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+
+  const { userId } = req.params;
+
+  try {
+    const user = await UserProvider.getUserById(userId);
+
+    if (!user) {
+      returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+      returnObject.status = StatusString.ERROR;
+      returnObject.error = "Could not find requested user.";
+      res.render("notFoundError", {
+        title: "No Encontrado",
+        error: returnObject.error,
+      });
+    } else {
+      const leanUser = formatUserRecord(user);
+      res.render("userProfile", { title: "Perfil de Usuario", user: leanUser });
+    }
+  } catch (error) {
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = error.message;
+
+    res.render("internalServerError", {
+      title: "Error Interno del Servidor",
+      error: error.message,
+    });
+  }
+};
+
+export const getUserCartView = (req, res) => {
+  res.render("cart", { title: "Carrito de Compras" });
+};

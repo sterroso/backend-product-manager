@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
+import moment from "moment";
 
 export const userSchema = new Schema(
   {
@@ -49,7 +50,7 @@ export const userSchema = new Schema(
     isAdmin: {
       type: Schema.Types.Boolean,
       required: true,
-      default: false
+      default: false,
     },
   },
   {
@@ -59,11 +60,7 @@ export const userSchema = new Schema(
 );
 
 userSchema.virtual("age").get((value, virtual, doc) => {
-  const currentDate = Date.now();
-  const dateDifferenceInMilliseconds = currentDate - doc.dateOfBirth;
-  const ageLapse = new Date(dateDifferenceInMilliseconds);
-
-  return Math.abs(ageLapse.getUTCFullYear() - 1970);
+  return moment().diff(doc.dateOfBirth, "years");
 });
 
 userSchema.plugin(MongooseDelete, {

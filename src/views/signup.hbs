@@ -19,59 +19,59 @@
 
     <main>
       <h2>Registro de Nuevo Usuario</h2>
-      <form id="userSignup">
+      <form id="userSignupForm">
         <div>
-          <label for="userEmail">E-mail:</label>
+          <label for="userEmailField">E-mail:</label>
           <input
             type="email"
-            id="userEmail"
-            name="userEmail"
+            id="userEmailField"
+            name="userEmailField"
             minLength="9"
             required
           />
         </div>
 
         <div>
-          <label for="userPassword">Contraseña:</label>
+          <label for="userPasswordField">Contraseña:</label>
           <input
             type="password"
-            id="userPassword"
-            name="userPassword"
+            id="userPasswordField"
+            name="userPasswordField"
             minLength="6"
             required
           />
         </div>
 
         <div>
-          <label for="userFirstName">Nombre(s):</label>
+          <label for="userFirstNameField">Nombre(s):</label>
           <input
             type="text"
-            id="userFirstName"
-            name="userFirstName"
+            id="userFirstNameField"
+            name="userFirstNameField"
             minLength="3"
             required
           />
         </div>
 
         <div>
-          <label for="userLastName">Apellido(s):</label>
+          <label for="userLastNameField">Apellido(s):</label>
           <input
             type="text"
-            id="userLastName"
-            name="userLastName"
+            id="userLastNameField"
+            name="userLastNameField"
             minLength="3"
             required
           />
         </div>
 
         <div>
-          <label for="userDateOfBirth">Fecha de Nacimiento:</label>
-          <input type="date" id="userDateOfBirth" name="userDateOfBirth" required />
+          <label for="userDateOfBirthField">Fecha de Nacimiento:</label>
+          <input type="date" id="userDateOfBirthField" name="userDateOfBirthField" required />
         </div>
 
         <div>
-          <label for="userGender">Sexo:</label>
-          <select id="userGender" name="userGender" required>
+          <label for="userGenderSelector">Sexo:</label>
+          <select id="userGenderSelector" name="userGenderSelector" required>
             <option value="femenino">Femenino</option>
             <option value="masculino">Masculino</option>
             <option value="otro">Otro</option>
@@ -80,7 +80,7 @@
         </div>
 
         <div>
-          <input type="button" value="Registrarme" id="signupButton" />
+          <input type="submit" value="Registrarme" id="signupButton" />
         </div>
       </form>
     </main>

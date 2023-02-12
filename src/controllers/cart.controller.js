@@ -1,7 +1,36 @@
 import * as CartProvider from "../dao/cart.mongo-dao.js";
+import * as UserProvider from "../dao/user.mongo-dao.js";
 import { getProduct } from "../dao/product.mongo-dao.js";
 import { StatusCode, StatusString } from "../constants/constants.js";
 import sanitize from "mongo-sanitize";
+
+const formatCartItem = (cartItem) => {
+  return {
+    id: cartItem._id,
+    code: cartItem.code,
+    title: cartItem.title,
+    description: cartItem.description,
+    stock: cartItem.stock,
+    status: cartItem.status,
+    thumbnails: cartItem.thumbnails,
+    salesPrice: cartItem.salesPrice,
+    quantity: cartItem.quantity,
+  };
+};
+
+const formatCartItemsArray = (cartItems) =>
+  cartItems.map((cartItem) => formatCartItem(cartItem));
+
+const formatCart = (cart) => {
+  return {
+    id: cart._id,
+    items: formatCartItemsArray(cart.items),
+    count: cart.count,
+    total: cart.total,
+  };
+};
+
+const formatCartsArray = (carts) => carts.map((cart) => formatCart(cart));
 
 export const getCarts = async (req, res) => {
   const returnObject = {};
@@ -15,7 +44,7 @@ export const getCarts = async (req, res) => {
       returnObject.status = StatusString.EMPTY_RESULTSET;
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.carts = carts;
+      returnObject.payload = formatCartsArray(carts);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -40,7 +69,7 @@ export const getCartById = async (req, res) => {
       returnObject.status = StatusString.EMPTY_RESULTSET;
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.cart = cart;
+      returnObject.payload = formatCart(cart);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -61,7 +90,7 @@ export const getCartByUserId = async (req, res) => {
     const cart = await CartProvider.getCartByUserId(userId);
 
     returnObject.status = StatusString.SUCCESS;
-    returnObject.payload = cart;
+    returnObject.payload = formatCart(cart);
   } catch (error) {
     returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
     returnObject.status = StatusString.ERROR;
@@ -75,16 +104,30 @@ export const createCart = async (req, res) => {
   const returnObject = {};
   let returnStatus = StatusCode.SUCCESSFUL.CREATED;
 
-  try {
-    const newCart = await CartProvider.createCart();
+  const { userId } = req.params;
 
-    if (!newCart) {
+  try {
+    const userExists = await UserProvider.getUserById(userId);
+
+    if (!userExists) {
       returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+
       returnObject.status = StatusString.ERROR;
-      returnObject.error = "Cart could not be created.";
+      returnObject.error = "User not found.";
+    } else {
+      const newCart = await CartProvider.createCart(userId);
+
+      if (!newCart) {
+        returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+        returnObject.status = StatusString.ERROR;
+        returnObject.error = "Cart could not be created.";
+      } else {
+        returnObject.status = StatusString.SUCCESS;
+        returnObject.payload = formatCart(newCart);
+      }
     }
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
     returnObject.status = StatusString.ERROR;
     returnObject.error = error.message;
   }
@@ -114,7 +157,7 @@ export const updateCart = async (req, res) => {
         returnObject.error = "Cart could not be updated.";
       } else {
         returnObject.status = StatusString.SUCCESS;
-        returnObject.payload = updatedCart;
+        returnObject.payload = formatCart(updatedCart);
       }
     } catch (error) {
       returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
@@ -138,7 +181,7 @@ export const deleteCart = async (req, res) => {
     returnObject.status = StatusString.DELETED;
     returnObject.message = deleteMessage;
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
     returnObject.status = StatusString.ERROR;
     returnObject.error = error.message;
   }
@@ -170,10 +213,10 @@ export const addCartItem = async (req, res) => {
       const updatedCart = await CartProvider.addCartItem(cartId, productItem);
 
       returnObject.status = StatusString.SUCCESS;
-      returnObject.cart = updatedCart;
+      returnObject.payload = formatCart(updatedCart);
     }
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
     returnObject.status = StatusString.ERROR;
     returnObject.error = error.message;
@@ -214,7 +257,7 @@ export const updateCartItem = async (req, res) => {
       returnObject.error = "Object not updated.";
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = updatedProduct;
+      returnObject.payload = formatCartItem(updatedProduct);
     }
   } catch (error) {
     returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
@@ -241,6 +284,9 @@ export const deleteCartItem = async (req, res) => {
 
       (returnObject.status = StatusString.ERROR),
         (returnObject.error = "Cart item could not be deleted.");
+    } else {
+      returnObject.status = StatusString.SUCCESS;
+      returnObject.payload = formatCart(deleteConfirmation);
     }
   } catch (error) {
     returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
@@ -268,7 +314,7 @@ export const clearCartItems = async (req, res) => {
       const clearedCart = await CartProvider.clearCartItems(sanitize(cartId));
 
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = clearedCart;
+      returnObject.payload = formatCart(clearedCart);
     } catch (error) {
       returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 

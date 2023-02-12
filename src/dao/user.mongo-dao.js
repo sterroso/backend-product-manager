@@ -1,8 +1,17 @@
+import bcrypt from "bcrypt";
 import UserModel from "../models/user.model.js";
+import { BCRYPT_PASSWORD_HASH_ROUNDS } from "../constants/constants.js";
+
+const getPasswordHash = async (plain) => {
+  return await bcrypt.hash(
+    plain,
+    await bcrypt.genSalt(BCRYPT_PASSWORD_HASH_ROUNDS)
+  );
+};
 
 export const getUsers = async () => {
   try {
-    const allUsers = await UserModel.find();
+    const allUsers = await UserModel.find({ deleted: false });
 
     return allUsers;
   } catch (error) {
@@ -25,7 +34,7 @@ export const getUserByEmail = async (userEmail) => {
     const user = await UserModel.findOne({
       email: userEmail,
       deleted: false,
-    }).lean();
+    });
 
     return user;
   } catch (error) {
@@ -41,6 +50,13 @@ export const createUser = async (userData) => {
       throw new Error("User already exists.");
     }
 
+    const hashedPassword = await getPasswordHash(userData.password);
+
+    userData = {
+      ...userData,
+      password: hashedPassword,
+    };
+
     const newUser = await UserModel.create(userData);
 
     return newUser;
@@ -49,8 +65,18 @@ export const createUser = async (userData) => {
   }
 };
 
-export const updateUser = async (userId, userData) => {
+export const updateUser = async (userId, userData, updatePassword = false) => {
   try {
+    if (updatePassword) {
+      if (userData.password) {
+        const hashedPassword = await getPasswordHash(userData.password);
+
+        userData = { ...userData, password: hashedPassword };
+      } else {
+        throw new Error("Password not provided");
+      }
+    }
+
     const updatedUser = await UserModel.findByIdAndUpdate(userId, userData, {
       new: true,
     });

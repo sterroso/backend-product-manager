@@ -6,22 +6,22 @@ const router = Router();
 
 router.get("/", ViewsController.getHomeView);
 
-router.get("/signup", ViewsController.userSignup);
+router.get("/signup", ViewsController.getUserSignupView);
 
-router.get("/login", ViewsController.userLogin);
+router.get("/wellcome", ViewsController.getNewUserWellcomeView);
 
-router.get("/logout", ViewsController.userLogout);
+router.get("/login", ViewsController.getUserLoginView);
 
-router.get("/products/", ViewsController.getProductsView);
+router.get("/githublogin", ViewsController.getGithubLoginView);
 
-router.get("/products/:productId", ViewsController.getProductDetailView);
+router.get("/products/", auth, ViewsController.getProductsView);
 
-router.get("/carts/:cartId", auth, ViewsController.getCartView);
+router.get("/products/:productId", auth, ViewsController.getProductDetailView);
 
-router.get(
-  "/carts/:cartId/products/:productId",
-  auth,
-  ViewsController.addCartItem
-);
+router.get("/logout", auth, ViewsController.userLogout);
+
+router.get("/user/:userId/profile", auth, ViewsController.getUserProfileView);
+
+router.get("/user/:userId/cart/:cartId", auth, ViewsController.getUserCartView);
 
 export default router;

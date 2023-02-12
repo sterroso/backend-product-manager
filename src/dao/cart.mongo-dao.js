@@ -3,7 +3,7 @@ import CartModel from "../models/cart.model.js";
 export const getCarts = async () => {
   try {
     const carts = await CartModel.find({ deleted: false }).populate(
-      "items.productId"
+      "items.product"
     );
 
     return carts;
@@ -18,7 +18,7 @@ export const getCartById = async (cartId) => {
       cartId,
       {},
       { deleted: false }
-    ).populate("items.productId");
+    ).populate("items.product");
 
     return cart;
   } catch (error) {
@@ -31,7 +31,7 @@ export const getCartByUserId = async (userId) => {
     const cart = await CartModel.findOne({
       user: userId,
       deleted: false,
-    }).populate("items.productId");
+    }).populate("items.product");
 
     if (cart) {
       return cart;
@@ -63,9 +63,9 @@ export const getDeletedCart = async (cartId) => {
   }
 };
 
-export const createCart = async () => {
+export const createCart = async (userId) => {
   try {
-    const newCart = await CartModel.create({ total: 0, count: 0, items: [] });
+    const newCart = await CartModel.create({ user: userId, total: 0, count: 0, items: [] });
 
     return newCart;
   } catch (error) {

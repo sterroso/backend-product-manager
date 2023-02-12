@@ -11,12 +11,12 @@ route.get("/:userId", UserController.getUser);
 
 route.get("/:userId/cart", auth, CartController.getCartByUserId);
 
+route.post("/:userId/cart", auth, CartController.createCart);
+
 route.post("/", UserController.createUser);
 
 route.put("/:userId", UserController.updateUser);
 
 route.delete("/:userId", auth, UserController.deleteUser);
-
-route.post("/login", UserController.getUserByEmail);
 
 export default route;

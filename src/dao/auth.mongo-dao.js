@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import * as UserProvider from "./user.mongo-dao.js";
 
 export const login = async (email, password) => {
@@ -8,7 +9,7 @@ export const login = async (email, password) => {
       throw new Error("User does not exist.");
     }
 
-    return existingUser.password === password;
+    return await bcrypt.compare(password, existingUser.password);
   } catch (error) {
     throw new Error(error.message);
   }

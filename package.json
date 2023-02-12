@@ -20,6 +20,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "connect-mongo": "^4.6.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -27,10 +28,14 @@
     "express": "^4.18.2",
     "express-handlebars": "^6.0.6",
     "express-session": "^1.17.3",
+    "moment": "^2.29.4",
     "mongo-sanitize": "^1.1.0",
     "mongoose": "^6.8.3",
     "mongoose-delete": "^0.5.4",
     "mongoose-paginate-v2": "^1.7.1",
+    "passport": "^0.6.0",
+    "passport-github2": "^0.1.12",
+    "passport-local": "^1.0.0",
     "socket.io": "^4.5.4"
   },
   "devDependencies": {

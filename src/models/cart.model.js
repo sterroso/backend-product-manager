@@ -4,7 +4,7 @@ import ProductModel from "./product.model.js";
 import UserModel from "./user.model.js";
 
 export const cartItemSchema = new Schema({
-  productId: {
+  product: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: ProductModel,
@@ -24,6 +24,11 @@ export const cartItemSchema = new Schema({
 
 export const cartSchema = new Schema(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: UserModel,
+    },
     total: {
       type: Schema.Types.Decimal128,
       required: true,
@@ -54,7 +59,9 @@ cartSchema.plugin(MongooseDelete, {
   indexFields: ["deleted", "deletedAt"],
 });
 
+/*
 export const CartItemModel = model("cartItem", cartItemSchema);
+*/
 
 const CartModel = model("cart", cartSchema);
 

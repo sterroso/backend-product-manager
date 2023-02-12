@@ -1,0 +1,76 @@
+    <header>
+      <div class="brand">
+        <img
+          class="logo"
+          src="/public/img/products_icon_128x128.png"
+          alt="Logotipo de productos"
+        />
+        <h1 class="main-title">{{title}}</h1>
+      </div>
+
+      <nav id="nav">
+        <ul class="main-menu">
+          <li class="main-menu-item">
+            <a href="/" class="link">Inicio</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <h2>Perfil de Usuario</h2>
+
+      {{#if user}}
+      <div class="user-profile-container">
+        <ul class="user-properties">
+          <li class="user-property-item">
+            <span class="user-property-key">Nombre:</span> <span class="user-property-value">{{user.firstName}} {{user.lastName}}</span>
+          </li>
+          <li class="user-property-item">
+            <span class="user-property-key">E-mail:</span> <span class="user-property-value">{{user.email}}</span>
+          </li>
+          <li class="user-property-item">
+            <span class="user-property-key">Sexo:</span> <span class="user-property-value">{{user.gender}}</span>
+          </li>
+          <li class="user-property-item">
+            <span class="user-property-key">Edad:</span> <span class="user-property-value">{{user.age}}</span>
+          </li>
+        </ul>
+      </div>
+
+      {{#if user.hasCart}}
+      <div class="user-cart-container">
+        <h3>Mi Carrito de Compras</h3>
+        <ul class="user-cart-summary">
+          <li class="user-cart-detail">
+            <span class="user-cart-detail-key">Artículos:</span>
+            <span class="user-cart-detail-value">{{user.cart.count}}</span>
+          </li>
+          <li class="user-cart-detail">
+            <span class="user-cart-detail-key">Total:</span>
+            <span class="user-cart-detail-value">{{user.cart.total}}</span>
+          </li>
+        </ul>
+        <nav class="user-cart-navigation-menu">
+          <ul class="user-cart-menu">
+            <li class="user-cart-menu-item"><a class="link" href="/user/{{user.id}}/carts/{{user.cart.id}}">Ir a mi carrito</a></li>
+            <li class="user-cart-menu-item"><a href="/products/" class="link">Explorar productos</a></li>
+          </ul>
+        </nav>
+      </div>
+      {{else}}
+      <p>No tiene carrito de compras.</p>
+      <button id="createCartButton">Crear Carrito de Compras</button>
+      {{/if}}
+      {{/if}}
+    </main>
+
+    <footer>
+      <div class="author">
+        <p>Autor:
+          <a class="email-link" href="mailto:sergio.terroso@gmail.com">Sergio
+            Terroso</a></p>
+      </div>
+    </footer>
+
+    <script src="/public/js/userProfile.js"></script>

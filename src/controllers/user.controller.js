@@ -1,7 +1,7 @@
 import * as UserProvider from "../dao/user.mongo-dao.js";
 import { StatusCode, StatusString } from "../constants/constants.js";
 
-const formatSingleRecord = (record) => {
+const formatUser = (record) => {
   return {
     id: record._id,
     email: record.email,
@@ -14,8 +14,7 @@ const formatSingleRecord = (record) => {
   };
 };
 
-const formatRecordsArray = (array) =>
-  array.map((record) => formatSingleRecord(record));
+const formatUsers = (array) => array.map((record) => formatUser(record));
 
 export const getUsers = async (req, res) => {
   const returnObject = {};
@@ -26,7 +25,7 @@ export const getUsers = async (req, res) => {
 
     if (allUsers.length > 0) {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatRecordsArray(allUsers);
+      returnObject.payload = formatUsers(allUsers);
     } else {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
       returnObject.status = StatusString.NOT_FOUND;
@@ -57,7 +56,7 @@ export const getUser = async (req, res) => {
       returnObject.error = "User not found.";
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatSingleRecord(user);
+      returnObject.payload = formatUser(user);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -81,7 +80,7 @@ export const getUserByEmail = async (req, res) => {
     if (user) {
       if (user.password === userPassword) {
         returnObject.status = StatusString.SUCCESS;
-        returnObject.payload = formatSingleRecord(user);
+        returnObject.payload = formatUser(user);
       } else {
         returnStatus = StatusCode.CLIENT_ERROR.UNAUTHORIZED;
         returnObject.status = StatusString.ERROR;
@@ -105,7 +104,7 @@ export const createUser = async (req, res) => {
     const newUser = await UserProvider.createUser(body);
 
     returnObject.status = StatusString.SUCCESS;
-    returnObject.payload = formatSingleRecord(newUser);
+    returnObject.payload = formatUser(newUser);
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
 
@@ -124,10 +123,14 @@ export const updateUser = async (req, res) => {
   const { body } = req;
 
   try {
-    const updatedUser = await UserProvider.updateUser(userId, body);
+    const updatedUser = await UserProvider.updateUser(
+      userId,
+      body,
+      body.updatePassword
+    );
 
     returnObject.status = StatusString.SUCCESS;
-    returnObject.payload = formatSingleRecord(updatedUser);
+    returnObject.payload = formatUser(updatedUser);
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
 

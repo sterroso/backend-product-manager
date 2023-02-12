@@ -25,11 +25,10 @@ export const login = async (req, res) => {
     const userLogin = await AuthProvider.login(email, password);
 
     if (userLogin) {
+      const loggedUser = await UserProvider.getUserByEmail(email);
       req.session.logged = true;
-      returnObject.status = StatusString.SUCCESS;
-      req.session.user = formatSingleRecord(
-        await UserProvider.getUserByEmail(email)
-      );
+      req.session.user = formatSingleRecord(loggedUser);
+      returnObject.user = formatSingleRecord(loggedUser);
     } else {
       returnStatus = StatusCode.CLIENT_ERROR.UNAUTHORIZED;
       returnObject.status = StatusString.ERROR;
