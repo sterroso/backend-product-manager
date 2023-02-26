@@ -1,30 +1,68 @@
-import * as CategoryProvider from "../dao/category.mongo-dao.js";
-import { StatusString, StatusCode } from "../constants/constants.js";
+import * as CategoryService from "../services/mongodb/mongodb.category.service.js";
+import {
+  StatusString,
+  StatusCode,
+  CustomPaginationLabels,
+  NoPaginationLabels,
+} from "../constants/constants.js";
 
-const formatSingleRecord = (record) => {
+const formatCategory = (category) => {
   return {
-    id: record._id,
-    name: record.name,
-    related: record.related,
+    id: category._id,
+    name: category.name,
+    description: category.description,
   };
 };
 
-const formatRecordArray = (array) =>
-  array.map((record) => formatSingleRecord(record));
+const formatCategories = (categories) =>
+  categories.map((category) => formatCategory(category));
 
 export const getCategories = async (req, res) => {
   const returnObject = {};
   let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
 
+  const options = {};
+
+  const query = {};
+
+  const { limit, page, sort, ...filters } = req.query;
+
+  const limitNumber = Number(limit ?? 0);
+
+  if (!isNaN(limitNumber) && limitNumber > 0 && limitNumber % 1 === 0) {
+    options.limit = limitNumber;
+
+    options.customLabels = CustomPaginationLabels;
+
+    const pageNumber = Number(page ?? 0);
+
+    if (!isNaN(pageNumber) && limitNumber > 0 && limitNumber % 1 === 0) {
+      options.page = pageNumber;
+    } else {
+      options.page = 1;
+    }
+  } else {
+    options.pagination = false;
+    options.customLabels = NoPaginationLabels;
+  }
+
+  if (["asc", "desc"].includes(sort)) {
+    options.sort = {
+      name: `${sort === "asc" ? 1 : -1}`,
+    };
+  }
+
   try {
-    const categories = await CategoryProvider.getCategories();
+    const categories = await CategoryService.getCategories(query, options);
 
     if (categories.length === 0) {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
+
       returnObject.status = StatusString.EMPTY_RESULTSET;
+      returnObject.error = "No categories were found.";
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatRecordArray(categories);
+      returnObject.payload = formatCategories(categories);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -34,7 +72,7 @@ export const getCategories = async (req, res) => {
     returnObject.error = error.message || "Could not get categories.";
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(returnStatus).json(returnObject);
 };
 
 export const getCategory = async (req, res) => {
@@ -44,21 +82,20 @@ export const getCategory = async (req, res) => {
   const { categoryId } = req.params;
 
   try {
-    const category = await CategoryProvider.getCategory(categoryId);
+    const category = await CategoryService.getCategory(categoryId);
 
     if (!category) {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
       returnObject.status = StatusString.EMPTY_RESULTSET;
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatSingleRecord(category);
+      returnObject.payload = formatCategory(category);
     }
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
-    returnObject.status = StatusString.FAIL;
-
-    returnObject.error = error.message || "Could not get category.";
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = error.message || "Category not found.";
   }
 
   res.status(returnStatus).json(returnObject);
@@ -71,22 +108,14 @@ export const createCategory = async (req, res) => {
   const { body } = req;
 
   try {
-    const deletedCategoryWithMatchingName =
-      await CategoryProvider.getDeletedCategory({ name: body.name });
-
-    if (!deletedCategoryWithMatchingName) {
-      const newCategory = await CategoryProvider.createCategory(body);
-
-      returnObject.payload = formatSingleRecord(newCategory);
-    } else {
-      const restoredCategory = await CategoryProvider.restoreCategory(
-        deletedCategoryWithMatchingName._id
-      );
-
-      returnObject.payload = formatSingleRecord(restoredCategory);
-    }
+    const newCategory = formatCategory(
+      await CategoryService.createCategory(body)
+    );
 
     returnObject.status = StatusString.SUCCESS;
+    returnObject.payload = {
+      category: newCategory,
+    };
   } catch (error) {
     returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
@@ -106,13 +135,12 @@ export const updateCategory = async (req, res) => {
   const { body } = req;
 
   try {
-    const updatedCategory = await CategoryProvider.updateCategory(
-      categoryId,
-      body
+    const updatedCategory = formatCategory(
+      await CategoryService.updateCategory(categoryId, body)
     );
 
     returnObject.status = StatusString.SUCCESS;
-    returnObject.payload = formatSingleRecord(updatedCategory);
+    returnObject.payload = updatedCategory;
   } catch (error) {
     returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
@@ -130,10 +158,10 @@ export const deleteCategory = async (req, res) => {
   const { categoryId } = req.params;
 
   try {
-    const deleteResult = await CategoryProvider.deleteCategory(categoryId);
+    const deleteResult = await CategoryService.deleteCategory(categoryId);
 
     returnObject.status = StatusString.DELETED;
-    returnObject.result = deleteResult;
+    returnObject.message = deleteResult;
   } catch (error) {
     returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 

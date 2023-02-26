@@ -2,7 +2,7 @@ import * as ProductProvider from "../dao/product.mongo-dao.js";
 import * as CartProvider from "../dao/cart.mongo-dao.js";
 import * as UserProvider from "../dao/user.mongo-dao.js";
 import {
-  CustomProductPaginationLabels,
+  CustomPaginationLabels,
   StatusCode,
   StatusString,
 } from "../constants/constants.js";
@@ -33,7 +33,7 @@ export const getProductsView = async (req, res) => {
 
   options.lean = true;
 
-  options.customLabels = CustomProductPaginationLabels;
+  options.customLabels = CustomPaginationLabels;
 
   if (priceSort) {
     options.sort = {};

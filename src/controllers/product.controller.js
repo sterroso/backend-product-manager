@@ -1,28 +1,28 @@
-import sanitize from "mongo-sanitize";
+import * as ProductService from "../services/mongodb/mongodb.product.service.js";
 import * as ProductProvider from "../dao/product.mongo-dao.js";
 import {
   StatusString,
   StatusCode,
-  CustomProductPaginationLabels,
-  NoProductPaginationLabels,
+  CustomPaginationLabels,
+  NoPaginationLabels,
 } from "../constants/constants.js";
 
-const formatSingleRecord = (record) => {
+const formatProduct = (product) => {
   return {
-    id: record._id,
-    code: record.code,
-    title: record.title,
-    description: record.description,
-    category: record.category,
-    price: Number(record.price),
-    stock: record.stock,
-    status: record.status,
-    thumbnails: record.thumbnails,
+    id: product._id,
+    code: product.code,
+    title: product.title,
+    description: product.description,
+    category: product.category,
+    price: Number(product.price),
+    stock: product.stock,
+    status: product.status,
+    thumbnails: product.thumbnails,
   };
 };
 
-const formatRecordsArray = (array) =>
-  array.map((record) => formatSingleRecord(record));
+const formatProducts = (products) =>
+  products.map((product) => formatProduct(product));
 
 export const getProducts = async (req, res) => {
   let returnObject = {};
@@ -32,48 +32,91 @@ export const getProducts = async (req, res) => {
 
   const options = {};
 
-  const { limit, page, sort, category, status } = req.query;
+  const { limit, page, sortByPrice, minPrice, maxPrice, category, search } =
+    req.query;
 
+  // If limit parameter is passed, converts it to a number, otherwise turns it to 0.
   const limitNumber = Number(limit ?? 0);
 
+  // If converted parameter is an integer number greater than 0 ...
   if (!isNaN(limitNumber) && limitNumber > 0 && limitNumber % 1 === 0) {
-    options.customLabels = CustomProductPaginationLabels;
+    // ... sets custom labels options,
+    options.customLabels = CustomPaginationLabels;
 
+    // sets a limit,
     options.limit = limitNumber;
 
+    // If page parameter is passed, converts it to a number, otherwise turns it to 0.
     const pageNumber = Number(page ?? 0);
 
+    // If converted parameter is an integer number grater than 0 ...
     if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber % 1 === 0) {
+      // ... sets the page option.
       options.page = pageNumber;
     } else {
+      // ... otherwise page is 1
       options.page = 1;
     }
   } else {
-    options.customLabels = NoProductPaginationLabels;
+    // ... otherwise sets no paging labels options,
+    options.customLabels = NoPaginationLabels;
+    // and no pagination to find
     options.pagination = false;
   }
 
-  let priceSortParam = sanitize(sort);
-
-  if (["asc", "desc"].includes(priceSortParam)) {
-    options.sort = {};
-    options.sort.price = priceSortParam === "asc" ? 1 : -1;
+  // If sortByPrice parameter is "asc" or "desc" ...
+  if (["asc", "desc"].includes(sortByPrice)) {
+    // ... sets sorting options
+    options.sort = {
+      price: sortByPrice === "asc" ? 1 : -1,
+    };
   }
 
-  let categoryFilter = sanitize(category);
+  // by default searches only undeleted products.
+  query.deleted = false;
 
-  if (categoryFilter) {
-    query.category = categoryFilter;
+  // and only available products (stock > 0)
+  query.stock = {
+    $gt: 0,
+  };
+
+  // If minPrice parameter is passed, convertis it to a number, otherwise sets it to 0
+  const minPriceNumber = Number(minPrice ?? 0);
+
+  // If converted parameter is a number greater than 0...
+  if (!isNaN(minPriceNumber) && minPriceNumber >= 0) {
+    // ... sets query filter for minimum price.
+    query.price = { $gte: minPriceNumber };
   }
 
-  let statusFilter = sanitize(status);
+  // If maxPrice parameter is passed, converts it to a number,
+  // otherwise sets it to 0.
+  const maxPriceNumber = Number(maxPrice ?? 0);
 
-  if (["true", "false"].includes(statusFilter)) {
-    query.status = statusFilter;
+  // If converted parameter is a number greater than minPriceNumber ...
+  if (!isNaN(maxPriceNumber) && maxPriceNumber > minPriceNumber) {
+    // ... sets query filter for maximun price.
+    query.price.$lte = maxPriceNumber;
+  }
+
+  // If category parameter is passed ...
+  if (category) {
+    // ... sets category query filter.
+    query.category = category;
+  }
+
+  // If the search parameter is passed ...
+  if (search) {
+    // ... sets text search query filter,
+    query.$text = { $search: search };
+    // and returns a score
+    query.score = { $meta: "textScore" };
+    // to sort results by relevance
+    options.sort.score = { $meta: "textScore" };
   }
 
   try {
-    const result = await ProductProvider.getProducts(query, options);
+    const result = await ProductService.getProducts(query, options);
 
     if (result.payload.length > 0) {
       const { hasPrevPage, hasNextPage } = result;
@@ -82,20 +125,28 @@ export const getProducts = async (req, res) => {
       let linkBuilder = "";
 
       if (options.sort) {
-        linkBuilder = `&sort=${options.sort === 1 ? "asc" : "desc"}`;
+        linkBuilder = `&sortByPrice=${options.sort === 1 ? "asc" : "desc"}`;
+      }
+
+      if (query.price.$gte) {
+        linkBuilder += `&minPrice=${minPriceNumber}`;
+      }
+
+      if (query.price.$lte) {
+        linkBuilder += `&maxPrice=${maxPriceNumber}`;
       }
 
       if (query.category) {
-        linkBuilder = `${linkBuilder}&category=${query.category}`;
+        linkBuilder += `&category=${category}`;
       }
 
-      if (query.status) {
-        linkBuilder = `${linkBuilder}&status=${query.status}`;
+      if (query.$text) {
+        linkBuilder += `&search=${search}`;
       }
 
       returnObject = { ...result };
-      returnObject.payload = formatRecordsArray(result.payload);
       returnObject.status = StatusString.SUCCESS;
+      returnObject.payload = formatProducts(result.payload);
       returnObject.prevLink = hasPrevPage
         ? `${baseUrl}${path}?limit=${options.limit}&page=${result.prevPage}${linkBuilder}`
         : null;
@@ -104,16 +155,18 @@ export const getProducts = async (req, res) => {
         : null;
     } else {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
+
       returnObject.status = StatusString.ERROR;
+      returnObject.error = "No products were found.";
     }
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
 
     returnObject.status = StatusString.ERROR;
     returnObject.error = error.message;
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(returnStatus).json(returnObject);
 };
 
 export const getProduct = async (req, res) => {
@@ -131,7 +184,7 @@ export const getProduct = async (req, res) => {
       returnObject.error = "Product not found.";
     } else {
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatSingleRecord(product);
+      returnObject.payload = formatProduct(product);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -148,6 +201,8 @@ export const createProduct = async (req, res) => {
 
   const { body } = req;
 
+  const { user } = req.session.cookie;
+
   try {
     const deletedProductWithMatchingCode =
       await ProductProvider.getDeletedProduct(body.code);
@@ -155,12 +210,12 @@ export const createProduct = async (req, res) => {
     if (!deletedProductWithMatchingCode) {
       const newProduct = await ProductProvider.createProduct(body);
 
-      returnObject.payload = formatSingleRecord(newProduct);
+      returnObject.payload = formatProduct(newProduct);
     } else {
       const restoredProduct = await ProductProvider.restoreProduct(body.code);
 
       returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatSingleRecord(restoredProduct);
+      returnObject.payload = formatProduct(restoredProduct);
     }
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
@@ -174,7 +229,7 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   const returnObject = {};
-  const returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
 
   const { productId } = req.params;
   const { body } = req;
@@ -183,7 +238,7 @@ export const updateProduct = async (req, res) => {
     const updatedProduct = await ProductProvider.updateProduct(productId, body);
 
     returnObject.status = StatusString.SUCCESS;
-    returnObject.payload = formatSingleRecord(updatedProduct);
+    returnObject.payload = formatProduct(updatedProduct);
   } catch (error) {
     returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
 

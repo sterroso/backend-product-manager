@@ -9,14 +9,36 @@ route.get("/", UserController.getUsers);
 
 route.get("/:userId", UserController.getUser);
 
-route.get("/:userId/cart", auth, CartController.getCartByUserId);
-
-route.post("/:userId/cart", auth, CartController.createCart);
-
 route.post("/", UserController.createUser);
 
-route.put("/:userId", UserController.updateUser);
+route.put("/:userId", auth, UserController.updateUser);
 
 route.delete("/:userId", auth, UserController.deleteUser);
+
+route.get("/:userId/cart", auth, CartController.getCartByUserId);
+
+route.put("/:userId/cart", auth, CartController.updateCart);
+
+route.delete("/:userId/cart", auth, CartController.clearCartItems);
+
+route.get("/:userId/cart/product/:productId", auth, CartController.getCartItem);
+
+route.post(
+  "/:userId/cart/product/:productId",
+  auth,
+  CartController.addCartItem
+);
+
+route.put(
+  "/:userId/cart/product/:productId",
+  auth,
+  CartController.updateCartItem
+);
+
+route.delete(
+  "/:userId/cart/product/:productId",
+  auth,
+  CartController.deleteCartItem
+);
 
 export default route;

@@ -10,6 +10,7 @@ import CartsRouter from "./src/routes/carts.router.js";
 import CategoriesRouter from "./src/routes/category.router.js";
 import UsersRouter from "./src/routes/users.router.js";
 import AuthRouter from "./src/routes/auth.router.js";
+import SessionRouter from "./src/routes/session.router.js";
 import PassportLocalRouter from "./src/routes/passportLocal.router.js";
 import PassportGithubRouter from "./src/routes/github.router.js";
 import ViewsRouter from "./src/routes/views.router.js";
@@ -51,6 +52,7 @@ app.set("views", "src/views");
 
 app.use("/", ViewsRouter);
 app.use("/api/auth/", AuthRouter);
+app.use("/api/sessions/", SessionRouter);
 app.use("/api/passportLocal/", PassportLocalRouter);
 app.use("/api/github/", PassportGithubRouter);
 app.use("/api/users/", UsersRouter);

@@ -1,7 +1,13 @@
 import * as CartProvider from "../dao/cart.mongo-dao.js";
 import * as UserProvider from "../dao/user.mongo-dao.js";
+import * as UserService from "../services/mongodb/mongodb.user.service.js";
 import { getProduct } from "../dao/product.mongo-dao.js";
-import { StatusCode, StatusString } from "../constants/constants.js";
+import {
+  StatusCode,
+  StatusString,
+  CustomPaginationLabels,
+  NoPaginationLabels,
+} from "../constants/constants.js";
 import sanitize from "mongo-sanitize";
 
 const formatCartItem = (cartItem) => {
@@ -188,6 +194,8 @@ export const deleteCart = async (req, res) => {
 
   res.status(returnStatus).json(returnObject).end();
 };
+
+export const getCartItem = async (req, res) => {};
 
 export const addCartItem = async (req, res) => {
   const returnObject = {};

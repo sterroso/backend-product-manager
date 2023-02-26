@@ -74,7 +74,7 @@ export const StatusCode = {
   },
 };
 
-export const CustomProductPaginationLabels = {
+export const CustomPaginationLabels = {
   totalDocs: false,
   docs: "payload",
   limit: false,
@@ -84,7 +84,7 @@ export const CustomProductPaginationLabels = {
   meta: false,
 };
 
-export const NoProductPaginationLabels = {
+export const NoPaginationLabels = {
   totalDocs: false,
   docs: "payload",
   limit: false,

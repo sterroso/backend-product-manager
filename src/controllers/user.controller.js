@@ -1,5 +1,10 @@
-import * as UserProvider from "../dao/user.mongo-dao.js";
-import { StatusCode, StatusString } from "../constants/constants.js";
+import * as UserService from "../services/mongodb/mongodb.user.service.js";
+import {
+  StatusCode,
+  StatusString,
+  CustomPaginationLabels,
+  NoPaginationLabels,
+} from "../constants/constants.js";
 
 const formatUser = (record) => {
   return {
@@ -10,7 +15,7 @@ const formatUser = (record) => {
     lastName: record.lastName,
     gender: record.gender,
     age: record.age,
-    role: record.isAdmin ? "admin" : "user",
+    role: record.role ?? "none",
   };
 };
 
@@ -20,8 +25,14 @@ export const getUsers = async (req, res) => {
   const returnObject = {};
   let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
 
+  const query = {};
+
+  const options = {};
+
+  const { limit, page, sort, ...filters } = req.query;
+
   try {
-    const allUsers = await UserProvider.getUsers();
+    const allUsers = await UserService.getUsers(query, options);
 
     if (allUsers.length > 0) {
       returnObject.status = StatusString.SUCCESS;
@@ -47,7 +58,7 @@ export const getUser = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const user = await UserProvider.getUserById(userId);
+    const user = await UserService.getUserById(userId);
 
     if (!user) {
       returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
@@ -70,12 +81,12 @@ export const getUser = async (req, res) => {
 
 export const getUserByEmail = async (req, res) => {
   const returnObject = {};
-  const returnStatus = StatusCode.SUCCESSFUL.ACCEPTED;
+  let returnStatus = StatusCode.SUCCESSFUL.ACCEPTED;
 
   const { userEmail, userPassword } = req.body;
 
   try {
-    const user = await UserProvider.getUserByEmail(userEmail);
+    const user = await UserService.getUserByEmail(userEmail);
 
     if (user) {
       if (user.password === userPassword) {
@@ -92,6 +103,8 @@ export const getUserByEmail = async (req, res) => {
     returnObject.status = StatusString.ERROR;
     returnObject.error = error.message;
   }
+
+  res.status(returnStatus).json(returnObject);
 };
 
 export const createUser = async (req, res) => {
@@ -101,7 +114,7 @@ export const createUser = async (req, res) => {
   const { body } = req;
 
   try {
-    const newUser = await UserProvider.createUser(body);
+    const newUser = await UserService.createUser(body);
 
     returnObject.status = StatusString.SUCCESS;
     returnObject.payload = formatUser(newUser);
@@ -123,7 +136,7 @@ export const updateUser = async (req, res) => {
   const { body } = req;
 
   try {
-    const updatedUser = await UserProvider.updateUser(
+    const updatedUser = await UserService.updateUser(
       userId,
       body,
       body.updatePassword
@@ -148,7 +161,7 @@ export const deleteUser = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const deletedMessage = await UserProvider.deleteUser(userId);
+    const deletedMessage = await UserService.deleteUser(userId);
 
     returnObject.status = StatusString.DELETED;
     returnObject.message = deletedMessage;

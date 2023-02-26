@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
 import moment from "moment";
-import CartModel from "./cart.model.js";
+import CartModel from "./mongodb.cart.model.js";
 
 export const userSchema = new Schema(
   {

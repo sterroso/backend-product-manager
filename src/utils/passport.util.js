@@ -16,7 +16,7 @@ const formatUser = (user) => {
     lastName: user.lastName,
     gender: user.gender,
     age: user.age,
-    role: user.isAdmin ? "admin" : "user",
+    role: user.role ?? "none",
   };
 };
 

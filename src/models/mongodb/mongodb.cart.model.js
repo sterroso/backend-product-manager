@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
+import MongoosePaginate from "mongoose-paginate-v2";
 import MongooseDelete from "mongoose-delete";
-import ProductModel from "./product.model.js";
+import ProductModel from "./mongodb.product.model.js";
 
 export const cartItemSchema = new Schema({
   product: {
@@ -21,6 +22,10 @@ export const cartItemSchema = new Schema({
   },
 });
 
+cartItemSchema.virtual("subtotal").get(() => {
+  return this.salesPrice * this.quantity;
+});
+
 export const cartSchema = new Schema(
   {
     items: [{ type: cartItemSchema }],
@@ -32,10 +37,7 @@ export const cartSchema = new Schema(
 );
 
 cartSchema.virtual("total").get(() => {
-  return this.items.reduce(
-    (sum, item) => (sum += item.salesPrice * item.quantity),
-    0
-  );
+  return this.items.reduce((sum, item) => (sum += item.subtotal), 0);
 });
 
 cartSchema.virtual("count").get(() => {
@@ -47,6 +49,8 @@ cartSchema.plugin(MongooseDelete, {
   overrideMethods: "all",
   indexFields: ["deleted", "deletedAt"],
 });
+
+cartSchema.plugin(MongoosePaginate);
 
 const CartModel = model("cart", cartSchema);
 
