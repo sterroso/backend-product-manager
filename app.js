@@ -9,6 +9,7 @@ import ProductsRouter from "./src/routes/products.router.js";
 import CartsRouter from "./src/routes/carts.router.js";
 import CategoriesRouter from "./src/routes/category.router.js";
 import UsersRouter from "./src/routes/users.router.js";
+import SessionRouter from "./src/routes/session.router.js";
 import AuthRouter from "./src/routes/auth.router.js";
 import PassportLocalRouter from "./src/routes/passportLocal.router.js";
 import PassportGithubRouter from "./src/routes/github.router.js";
@@ -37,7 +38,7 @@ app.use(
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 600000 },
+    cookie: { maxAge: 1000 * 60 * 60 * 24 },
   })
 );
 
@@ -57,5 +58,6 @@ app.use("/api/users/", UsersRouter);
 app.use("/api/categories/", CategoriesRouter);
 app.use("/api/products/", ProductsRouter);
 app.use("/api/carts/", CartsRouter);
+app.use("/api/session/", SessionRouter);
 
 export default app;

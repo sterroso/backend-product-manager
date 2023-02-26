@@ -2,16 +2,16 @@ import { StatusCode, StatusString } from "../constants/constants.js";
 import * as AuthProvider from "../dao/auth.mongo-dao.js";
 import * as UserProvider from "../dao/user.mongo-dao.js";
 
-const formatSingleRecord = (record) => {
+const formatUser = (user) => {
   return {
-    id: record._id,
-    email: record.email,
-    firstName: record.firstName,
-    middleName: record.middleName,
-    lastName: record.lastName,
-    gender: record.gender,
-    age: record.age,
-    role: record.isAdmin ? "admin" : "user",
+    id: user._id,
+    email: user.email,
+    firstName: user.firstName,
+    middleName: user.middleName,
+    lastName: user.lastName,
+    gender: user.gender,
+    age: user.age,
+    role: user.isAdmin ? "admin" : "user",
   };
 };
 
@@ -27,8 +27,8 @@ export const login = async (req, res) => {
     if (userLogin) {
       const loggedUser = await UserProvider.getUserByEmail(email);
       req.session.logged = true;
-      req.session.user = formatSingleRecord(loggedUser);
-      returnObject.user = formatSingleRecord(loggedUser);
+      req.session.user = formatUser(loggedUser);
+      returnObject.user = formatUser(loggedUser);
     } else {
       returnStatus = StatusCode.CLIENT_ERROR.UNAUTHORIZED;
       returnObject.status = StatusString.ERROR;

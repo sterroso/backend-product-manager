@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { StatusCode, StatusString } from "../constants/constants.js";
-import * as UserProvider from "../dao/user.mongo-dao.js";
 import PassportLocal from "../utils/passport.util.js";
 
 const router = Router();

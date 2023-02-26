@@ -53,7 +53,7 @@ passport.deserializeUser(async (email, done) => {
 
     done(new Error("User not found"), null);
   } catch (error) {
-    done(new Error(err.message), null);
+    done(new Error(error.message), null);
   }
 });
 

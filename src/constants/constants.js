@@ -84,7 +84,32 @@ export const CustomProductPaginationLabels = {
   meta: false,
 };
 
+export const CustomPaginationLabels = {
+  totalDocs: false,
+  docs: "payload",
+  limit: false,
+  offset: false,
+  totalPages: false,
+  pagingCounter: false,
+  meta: false,
+};
+
 export const NoProductPaginationLabels = {
+  totalDocs: false,
+  docs: "payload",
+  limit: false,
+  page: false,
+  prevPage: false,
+  nextPage: false,
+  hasPrevPage: false,
+  hasNextPage: false,
+  offset: false,
+  totalPages: false,
+  pagingCounter: false,
+  meta: false,
+};
+
+export const NoPaginationLabels = {
   totalDocs: false,
   docs: "payload",
   limit: false,
