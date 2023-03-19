@@ -41,11 +41,6 @@ export const cartSchema = new Schema(
       min: 0,
       default: 0,
     },
-    user: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: UserModel,
-    },
     items: [{ type: cartItemSchema }],
   },
   {

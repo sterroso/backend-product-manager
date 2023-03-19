@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import moment from "moment";
+import CartModel from "./cart.model.js";
 
 export const userSchema = new Schema(
   {
@@ -51,6 +52,17 @@ export const userSchema = new Schema(
       type: Schema.Types.Boolean,
       required: true,
       default: false,
+    },
+    roles: {
+      type: [String],
+      required: true,
+      enum: ["admin", "user", "manager", "developer"],
+      default: ["user"],
+    },
+    cart: {
+      type: Schema.Types.ObjectId,
+      required: false,
+      ref: CartModel,
     },
   },
   {

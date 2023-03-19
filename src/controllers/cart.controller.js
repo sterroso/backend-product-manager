@@ -1,8 +1,19 @@
 import * as CartProvider from "../dao/cart.mongo-dao.js";
 import * as UserProvider from "../dao/user.mongo-dao.js";
+import * as ProductProvider from "../dao/product.mongo-dao.js";
 import { getProduct } from "../dao/product.mongo-dao.js";
 import { StatusCode, StatusString } from "../constants/constants.js";
 import sanitize from "mongo-sanitize";
+
+const isValidQuantity = (quantity) => {
+  const numberQuantity = Number(quantity);
+
+  return (
+    !isNaN(numberQuantity) && // quantity parameter IS a number,
+    numberQuantity > 0 && // greater than 0 (zero),
+    numberQuantity % 1 === 0 // and it is an integer.
+  );
+};
 
 const formatCartItem = (cartItem) => {
   return {
@@ -195,6 +206,8 @@ export const addCartItem = async (req, res) => {
 
   const { cartId, productId } = req.params;
 
+  const { quantity = 1 } = req.query;
+
   try {
     const existingProduct = await getProduct(productId);
 
@@ -207,7 +220,7 @@ export const addCartItem = async (req, res) => {
       const productItem = {
         productId,
         salesPrice: existingProduct.price,
-        quantity: 1,
+        quantity: isValidQuantity(quantity) ? Number(quantity) : 1,
       };
 
       const updatedCart = await CartProvider.addCartItem(cartId, productItem);
@@ -223,6 +236,56 @@ export const addCartItem = async (req, res) => {
   }
 
   res.status(returnStatus).json(returnObject).end();
+};
+
+export const addCartItemByUserId = async (req, res) => {
+  const returnObject = {};
+  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+
+  const { userId, productId } = req.params;
+
+  const { quantity = 1 } = req.query;
+
+  try {
+    const cartOwner = await UserProvider.getUserById(userId);
+
+    if (!cartOwner) {
+      returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
+
+      returnObject.status = StatusString.ERROR;
+      returnObject.error = `No user with id "${userId}" was found.`;
+    } else {
+      const existingProduct = await ProductProvider.getProduct(productId);
+
+      if (!existingProduct) {
+        returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
+
+        returnObject.status = StatusString.ERROR;
+        returnObject.error = `No product with id "${productId}" was found.`;
+      } else {
+        const productItem = {
+          product: existingProduct._id,
+          salesPrice: existingProduct.price,
+          quantity: isValidQuantity(quantity) ? Number(quantity) : 1,
+        };
+
+        const updatedCart = await CartProvider.addCartItem(
+          cartOwner.cart,
+          productItem
+        );
+
+        returnObject.status = StatusString.SUCCESS;
+        returnObject.payload = updatedCart;
+      }
+    }
+  } catch (error) {
+    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+
+    returnObject.status = StatusString.ERROR;
+    returnObject.error = error.message;
+  }
+
+  res.status(returnStatus).json(returnObject);
 };
 
 export const updateCartItem = async (req, res) => {

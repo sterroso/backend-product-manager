@@ -28,7 +28,9 @@ export const login = async (req, res) => {
       const loggedUser = await UserProvider.getUserByEmail(email);
       req.session.logged = true;
       req.session.user = formatUser(loggedUser);
-      returnObject.user = formatUser(loggedUser);
+
+      returnObject.status = StatusString.SUCCESS;
+      returnObject.payload = formatUser(loggedUser);
     } else {
       returnStatus = StatusCode.CLIENT_ERROR.UNAUTHORIZED;
       returnObject.status = StatusString.ERROR;

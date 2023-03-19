@@ -65,7 +65,12 @@ export const getDeletedCart = async (cartId) => {
 
 export const createCart = async (userId) => {
   try {
-    const newCart = await CartModel.create({ user: userId, total: 0, count: 0, items: [] });
+    const newCart = await CartModel.create({
+      user: userId,
+      total: 0,
+      count: 0,
+      items: [],
+    });
 
     return newCart;
   } catch (error) {
@@ -99,7 +104,11 @@ export const updateCart = async (cartId, cartItems) => {
         cart.save();
       }
     );
-  } catch (error) {}
+
+    return updatedCart;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 export const restoreCart = async (cartId) => {

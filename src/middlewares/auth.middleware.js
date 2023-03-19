@@ -3,7 +3,7 @@ import { StatusCode } from "../constants/constants.js";
 const auth = (req, res, next) => {
   if (req.session.logged) {
     req.session.touch();
-    console.log("[Auth Middleware] SessionID: ", req.sessionID);
+    // console.log("[Auth Middleware] SessionID: ", req.sessionID);
     next();
   } else {
     res

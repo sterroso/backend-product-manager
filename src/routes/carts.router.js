@@ -8,14 +8,18 @@ router.get("/", CartController.getCarts);
 
 router.get("/:cartId", CartController.getCartById);
 
-router.post("/:cartId/products/:productId", CartController.addCartItem);
+router.post("/:cartId/products/:productId", auth, CartController.addCartItem);
 
-router.put("/:cartId", CartController.updateCart);
+router.put("/:cartId", auth, CartController.updateCart);
 
-router.put("/:cartId/products/:productId", CartController.updateCartItem);
+router.put("/:cartId/products/:productId", auth, CartController.updateCartItem);
 
-router.delete("/:cartId", CartController.clearCartItems);
+router.delete("/:cartId", auth, CartController.clearCartItems);
 
-router.delete("/:cartId/products/:productId", CartController.deleteCartItem);
+router.delete(
+  "/:cartId/products/:productId",
+  auth,
+  CartController.deleteCartItem
+);
 
 export default router;
