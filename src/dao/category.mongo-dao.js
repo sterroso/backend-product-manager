@@ -1,10 +1,8 @@
 import CategoryModel from "../models/category.model.js";
 
-export const getCategories = async () => {
+export const getAllCateogries = async (query, options) => {
   try {
-    const categories = await CategoryModel.find({ deleted: false });
-
-    return categories;
+    return await CategoryModel.paginate(query, options);
   } catch (error) {
     throw new Error(error.message);
   }
@@ -12,12 +10,7 @@ export const getCategories = async () => {
 
 export const getCategory = async (categoryId) => {
   try {
-    const category = await CategoryModel.findOne({
-      _id: categoryId,
-      deleted: false,
-    });
-
-    return category;
+    return await CategoryModel.findById(categoryId);
   } catch (error) {
     throw new Error(error.message);
   }
@@ -25,9 +18,7 @@ export const getCategory = async (categoryId) => {
 
 export const getDeletedCategory = async (filter) => {
   try {
-    const deletedCategory = await CategoryModel.findOneDeleted(filter);
-
-    return deletedCategory;
+    return await CategoryModel.findOne({ ...filter, deleted: true });
   } catch (error) {
     throw new Error(error.message);
   }
@@ -35,38 +26,32 @@ export const getDeletedCategory = async (filter) => {
 
 export const restoreCategory = async (categoryId) => {
   try {
-    await CategoryModel.restore({ _id: categoryId });
-    const restoredCategory = await CategoryModel.findByIdAndUpdate(
+    return await CategoryModel.findByIdAndUpdate(
       categoryId,
-      { $unset: { deletedAt: 1 } },
+      {
+        $unset: ["deletedAt", "deletedBy"],
+        $set: { deleted: false },
+      },
       { new: true }
     );
-
-    return restoredCategory;
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-export const createCategory = async (categoryObject) => {
+export const createCategory = async (data) => {
   try {
-    const newCategory = await CategoryModel.create(categoryObject);
-
-    return newCategory;
+    return await CategoryModel.create(data);
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-export const updateCategory = async (categoryId, categoryObject) => {
+export const updateCategory = async (categoryId, data) => {
   try {
-    const updatedCategory = await CategoryModel.findByIdAndUpdate(
-      categoryId,
-      categoryObject,
-      { new: true }
-    );
-
-    return updatedCategory;
+    return await CategoryModel.findByIdAndUpdate(categoryId, data, {
+      new: true,
+    });
   } catch (error) {
     throw new Error(error.message);
   }
@@ -74,9 +59,7 @@ export const updateCategory = async (categoryId, categoryObject) => {
 
 export const deleteCategory = async (categoryId) => {
   try {
-    const deletedCategory = await CategoryModel.delete({ _id: categoryId });
-
-    return deletedCategory;
+    return await CategoryModel.findByIdAndDelete(categoryId);
   } catch (error) {
     throw new Error(error.message);
   }

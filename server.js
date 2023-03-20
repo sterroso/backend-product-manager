@@ -1,71 +1,11 @@
-import dotenv from "dotenv";
-import { Server } from "socket.io";
+import config from "./src/config/app.config.js";
+import "./src/config/mongo.config.js";
 import app from "./app.js";
-import "./src/config/mongodb.js";
-import ProductManager from "./src/ProductManager.js";
-import Product from "./src/Product.js";
 
-dotenv.config();
+const port = config.port || 8080;
 
-const productsPath = "public/productos.json";
-
-const productManager = new ProductManager(productsPath);
-
-const server = app.listen(process.env.PORT || 8080, () =>
-  console.log(`🤖 Express Server listening on port ${process.env.PORT}`)
+const server = app.listen(port, () =>
+  console.log(`🤖 Express Server listening on port ${port}`)
 );
 
 server.on("error", (err) => console.error(err));
-
-const webSocketServer = new Server(server);
-
-webSocketServer.on("connection", (socket) => {
-  const allProducts = productManager.getProducts();
-
-  socket.emit("init", { products: allProducts });
-
-  socket.on("addNewProduct", (product) => {
-    const {
-      productCode,
-      productCategory,
-      productTitle,
-      productDescription,
-      productPrice,
-      productStock,
-      productStatus,
-    } = product;
-
-    try {
-      const newProduct = new Product(
-        productTitle,
-        productDescription,
-        productCode,
-        productPrice,
-        productStock,
-        productCategory,
-        productStatus
-      );
-
-      const newProductId = productManager.addProduct(newProduct);
-
-      if (newProductId !== -1) {
-        const newProductsList = productManager.getProducts();
-        // La nueva lista de productos se notifica a todos los clientes.
-        webSocketServer.emit("addNewProduct", {
-          products: newProductsList,
-          newProductId,
-          newProductTitle: newProduct.title,
-        });
-      } else {
-        // El error sólo se notifica al cliente que envía la petición.
-        socket.emit("error", {
-          status: "error",
-          message: "No se pudo agregar el producto.",
-        });
-      }
-    } catch (err) {
-      // El error sólo se notifica al cliente que envía la petición.
-      socket.emit("error", { status: "error", message: err.message });
-    }
-  });
-});

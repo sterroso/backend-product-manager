@@ -1,4 +1,4 @@
-import { StatusCode, StatusString } from "../constants/constants.js";
+import * as constants from "../config/app.constants.js";
 import * as AuthProvider from "../dao/auth.mongo-dao.js";
 import * as UserProvider from "../dao/user.mongo-dao.js";
 
@@ -17,7 +17,7 @@ const formatUser = (user) => {
 
 export const login = async (req, res) => {
   const returnObject = {};
-  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+  let returnStatus = constants.Status200.OK.code;
 
   const { email, password } = req.body;
 
@@ -29,17 +29,18 @@ export const login = async (req, res) => {
       req.session.logged = true;
       req.session.user = formatUser(loggedUser);
 
-      returnObject.status = StatusString.SUCCESS;
+      returnObject.status = constants.Status200.OK.name;
       returnObject.payload = formatUser(loggedUser);
     } else {
-      returnStatus = StatusCode.CLIENT_ERROR.UNAUTHORIZED;
-      returnObject.status = StatusString.ERROR;
+      returnStatus = constants.Status400.UNAUTHORIZED.code;
+
+      returnObject.status = constants.Status400.UNAUTHORIZED.name;
       returnObject.error = "User could not be logged-in.";
     }
   } catch (error) {
-    returnStatus = StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR;
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
 
-    returnObject.status = StatusString.ERROR;
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
     returnObject.error = error.message;
   }
 
@@ -50,14 +51,17 @@ export const logout = (req, res) => {
   req.session.destroy((error) => {
     if (error) {
       res
-        .status(StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR)
-        .json({ status: StatusString.ERROR, error: error.message })
+        .status(constants.Status500.INTERNAL_SERVER_ERROR.code)
+        .json({
+          status: constants.Status500.INTERNAL_SERVER_ERROR.name,
+          error: error.message,
+        })
         .end();
     } else {
       res
-        .status(StatusCode.SUCCESSFUL.SUCCESS)
+        .status(constants.Status200.OK.code)
         .json({
-          status: StatusString.SUCCESS,
+          status: constants.Status200.OK.name,
           message: "User logged out successfully.",
         })
         .end();

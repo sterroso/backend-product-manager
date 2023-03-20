@@ -1,8 +1,8 @@
 // Imports
-import { getSession } from "connect-mongo";
+import pkg from "connect-mongo";
 import mongoose from "mongoose";
 
-const sessionStore = getSession({ mongooseConnection: mongoose.connection });
+const sessionStore = pkg.getSession({ mongooseConnection: mongoose.connection });
 
 export const getCurrentSession = async (sessionID) => {
   try {

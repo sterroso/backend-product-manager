@@ -48,11 +48,6 @@ export const userSchema = new Schema(
       required: true,
       default: false,
     },
-    isAdmin: {
-      type: Schema.Types.Boolean,
-      required: true,
-      default: false,
-    },
     roles: {
       type: [String],
       required: true,

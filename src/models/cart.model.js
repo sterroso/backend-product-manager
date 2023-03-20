@@ -1,7 +1,6 @@
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import ProductModel from "./product.model.js";
-import UserModel from "./user.model.js";
 
 export const cartItemSchema = new Schema({
   product: {
@@ -22,41 +21,34 @@ export const cartItemSchema = new Schema({
   },
 });
 
+cartItemSchema.virtual("subtotal").get(() => {
+  return this.salesPrice * this.quantity;
+});
+
+export const CartItemModel = model("cartItem", cartItemSchema);
+
 export const cartSchema = new Schema(
   {
-    user: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: UserModel,
-    },
-    total: {
-      type: Schema.Types.Decimal128,
-      required: true,
-      min: 0,
-      default: 0,
-    },
-    count: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0,
-    },
-    items: [{ type: cartItemSchema }],
+    items: [{ type: Schema.Types.ObjectId, ref: CartItemModel }],
   },
   {
     timestamps: true,
   }
 );
 
+cartSchema.virtual("count").get(() => {
+  return this.items.reduce((count, item) => (count += item.quantity), 0);
+});
+
+cartSchema.virtual("total").get(() => {
+  return this.items.reduce((total, item) => (total += item.subtotal), 0);
+});
+
 cartSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: "all",
   indexFields: ["deleted", "deletedAt"],
 });
-
-/*
-export const CartItemModel = model("cartItem", cartItemSchema);
-*/
 
 const CartModel = model("cart", cartSchema);
 

@@ -9,27 +9,25 @@ import ProductsRouter from "./src/routes/products.router.js";
 import CartsRouter from "./src/routes/carts.router.js";
 import CategoriesRouter from "./src/routes/category.router.js";
 import UsersRouter from "./src/routes/users.router.js";
-import SessionRouter from "./src/routes/session.router.js";
 import AuthRouter from "./src/routes/auth.router.js";
 import PassportLocalRouter from "./src/routes/passportLocal.router.js";
 import PassportGithubRouter from "./src/routes/github.router.js";
 import ViewsRouter from "./src/routes/views.router.js";
 
+// Access to environment variables.
 dotenv.config();
 
-const { pathname: root } = new URL("./public", import.meta.url);
-
-console.info("Public folder path: ", root);
-
+// Create an app.
 const app = express();
-app.use("/public", express.static(root));
+
+// App middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookie());
 app.use(
   session({
     store: new mongoStore({
-      mongoUrl: process.env.MONGODB_CLOUD_ATLAS_URL,
+      mongoUrl: process.env.MONGODB_CONNECTION_STRING,
       options: {
         userNewUrlParse: true,
         useUnifiedTopology: true,
@@ -38,18 +36,19 @@ app.use(
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 },
+    cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }, // Seven days
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Configuración express-handlebars
+// Express-Handlebars engine setup
 app.engine(".hbs", engine({ extname: ".hbs" }));
 app.set("view engine", ".hbs");
 app.set("views", "src/views");
 
+// App routes
 app.use("/", ViewsRouter);
 app.use("/api/auth/", AuthRouter);
 app.use("/api/passportLocal/", PassportLocalRouter);
@@ -58,6 +57,6 @@ app.use("/api/users/", UsersRouter);
 app.use("/api/categories/", CategoriesRouter);
 app.use("/api/products/", ProductsRouter);
 app.use("/api/carts/", CartsRouter);
-app.use("/api/session/", SessionRouter);
 
+// Module exports
 export default app;

@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
-import mongooseDelete from "mongoose-delete";
+import MongooseDelete from "mongoose-delete";
+import MongoosePaginate from "mongoose-paginate-v2";
 
 export const categorySchema = new Schema(
   {
@@ -11,19 +12,19 @@ export const categorySchema = new Schema(
       minLength: 3,
       maxLength: 36,
     },
-    related: [String],
   },
   {
     timestamps: true,
   }
 );
 
-categorySchema.plugin(mongooseDelete, {
-  deletedAt: true,
-  overrideMethods: "all",
+categorySchema.plugin(MongooseDelete, {
+  overrideMethods: [/find/gi, /update/gi, /delete/gi],
   indexFields: ["deleted", "deletedAt"],
 });
 
-const CategoryModel = model("categories", categorySchema);
+categorySchema.plugin(MongoosePaginate);
+
+const CategoryModel = model("Category", categorySchema);
 
 export default CategoryModel;
