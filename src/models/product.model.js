@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
+import CategoryModel from "./category.model.js";
 
 export const productSchema = new Schema(
   {
@@ -27,30 +28,23 @@ export const productSchema = new Schema(
       maxLength: 252,
       trim: true,
     },
-    category: {
-      type: Schema.Types.ObjectId,
-      required: true,
-    },
+    categories: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: CategoryModel,
+      },
+    ],
     price: {
-      type: Schema.Types.Decimal128,
+      type: Number,
       required: true,
       min: 0,
       default: 0,
     },
-    stock: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 1,
-    },
-    status: {
-      type: Boolean,
-      required: true,
-      default: true,
-    },
-    thumbnails: {
-      type: [String],
-    },
+    thumbnails: [
+      {
+        type: String,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -58,13 +52,12 @@ export const productSchema = new Schema(
 );
 
 productSchema.plugin(MongooseDelete, {
-  deletedAt: true,
-  overrideMethods: "all",
   indexFields: ["deleted", "deletedAt"],
+  overrideMethods: [/find/gi, /update/gi, /delete/gi],
 });
 
 productSchema.plugin(MongoosePaginate);
 
-const ProductModel = model("product", productSchema);
+const ProductModel = model("Product", productSchema);
 
 export default ProductModel;

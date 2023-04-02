@@ -1,216 +1,315 @@
-import sanitize from "mongo-sanitize";
-import * as ProductProvider from "../dao/product.mongo-dao.js";
-import {
-  StatusString,
-  StatusCode,
-  CustomProductPaginationLabels,
-  NoProductPaginationLabels,
-} from "../constants/constants.js";
+import * as constants from "../config/app.constants.js";
+import * as CategoryService from "../dao/category.mongo-dao.js";
+import * as ProductService from "../dao/product.mongo-dao.js";
 
-const formatSingleRecord = (record) => {
-  return {
-    id: record._id,
-    code: record.code,
-    title: record.title,
-    description: record.description,
-    category: record.category,
-    price: Number(record.price),
-    stock: record.stock,
-    status: record.status,
-    thumbnails: record.thumbnails,
-  };
+const isValidNumberParam = (param, includesZero = false) => {
+  const numParam = Number(param ?? 0);
+
+  return !isNaN(numParam) && // param IS a number,
+    numParam > includesZero
+    ? -1
+    : 0 && // grater than zero (or greather than or equal to zero),
+        numParam % 1 === 0; // and it is an integer.
 };
 
-const formatRecordsArray = (array) =>
-  array.map((record) => formatSingleRecord(record));
-
-export const getProducts = async (req, res) => {
+export const getAllProducts = async (req, res) => {
   let returnObject = {};
-  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+  let returnStatus = constants.Status200.OK.code;
 
-  const query = {};
+  const {
+    limit = 10,
+    page = 1,
+    offset = 0,
+    sortByPrice = "desc",
+    category,
+    title,
+  } = req.query;
 
   const options = {};
 
-  const { limit, page, sort, category, status } = req.query;
+  if (isValidNumberParam(limit)) {
+    options.customLabels = constants.PaginateCustomLabels;
+    options.limit = Number(limit);
 
-  const limitNumber = Number(limit ?? 0);
+    options.page = isValidNumberParam(page) ? Number(page) : 1;
 
-  if (!isNaN(limitNumber) && limitNumber > 0 && limitNumber % 1 === 0) {
-    options.customLabels = CustomProductPaginationLabels;
-
-    options.limit = limitNumber;
-
-    const pageNumber = Number(page ?? 0);
-
-    if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber % 1 === 0) {
-      options.page = pageNumber;
-    } else {
-      options.page = 1;
+    if (isValidNumberParam(offset, true)) {
+      options.offset = Number(offset);
     }
   } else {
-    options.customLabels = NoProductPaginationLabels;
     options.pagination = false;
+    options.customLabels = constants.PaginateNoLabels;
   }
 
-  let priceSortParam = sanitize(sort);
-
-  if (["asc", "desc"].includes(priceSortParam)) {
-    options.sort = {};
-    options.sort.price = priceSortParam === "asc" ? 1 : -1;
+  if (["asc", "desc"].includes(sortByPrice)) {
+    options.sort = { price: sortByPrice === "asc" ? 1 : -1 };
   }
 
-  let categoryFilter = sanitize(category);
+  const query = {};
 
-  if (categoryFilter) {
-    query.category = categoryFilter;
+  if (category) {
+    query.category = new RegExp(`${category}`, "gi");
   }
 
-  let statusFilter = sanitize(status);
-
-  if (["true", "false"].includes(statusFilter)) {
-    query.status = statusFilter;
+  if (title) {
+    query.title = new RegExp(`${title}`, "gi");
   }
 
   try {
-    const result = await ProductProvider.getProducts(query, options);
+    const products = await ProductService.getAllProducts(query, options);
 
-    if (result.payload.length > 0) {
-      const { hasPrevPage, hasNextPage } = result;
-      const { baseUrl, path } = req;
+    if (products?.totalRecords > 0) {
+      let baseUrl = `${req.baseUrl}${req.path}`;
 
-      let linkBuilder = "";
+      if (products?.limit) {
+        baseUrl += `?limit=${products.limit}`;
 
-      if (options.sort) {
-        linkBuilder = `&sort=${options.sort === 1 ? "asc" : "desc"}`;
+        baseUrl += options?.offset > 0 ? `&offset=${options.offset}` : "";
+
+        if (options?.sort) {
+          Object.getOwnPropertyNames(options.sort).forEach((property) => {
+            const sortByParameterName = `sortBy${property
+              .charAt(0)
+              .toUpperCase()}${property.substring(1)}`;
+
+            baseUrl += `&${sortByParameterName}=${
+              options.sort[property] === 1 ? "asc" : "desc"
+            }`;
+          });
+        }
+
+        if (query?.category) {
+          baseUrl += `&category=${category}`;
+        }
+
+        if (query?.title) {
+          baseUrl += `&title=${title}`;
+        }
       }
 
-      if (query.category) {
-        linkBuilder = `${linkBuilder}&category=${query.category}`;
-      }
-
-      if (query.status) {
-        linkBuilder = `${linkBuilder}&status=${query.status}`;
-      }
-
-      returnObject = { ...result };
-      returnObject.payload = formatRecordsArray(result.payload);
-      returnObject.status = StatusString.SUCCESS;
-      returnObject.prevLink = hasPrevPage
-        ? `${baseUrl}${path}?limit=${options.limit}&page=${result.prevPage}${linkBuilder}`
-        : null;
-      returnObject.nextLink = hasNextPage
-        ? `${baseUrl}${path}?limit=${options.limit}&page=${result.nextPage}${linkBuilder}`
-        : null;
+      returnObject = {
+        ...products,
+        status: constants.Status200.OK.name,
+        prevLink: products.hasPrevPage
+          ? `${baseUrl}&page=${products.prevPage}`
+          : null,
+        nextLink: products.hasNextPage
+          ? `${baseUrl}&page=${products.nextPage}`
+          : null,
+      };
     } else {
-      returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
-      returnObject.status = StatusString.ERROR;
+      returnStatus = constants.Status400.NOT_FOUND.code;
+
+      returnObject.status = constants.Status400.NOT_FOUND.name;
     }
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
 
-    returnObject.status = StatusString.ERROR;
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
     returnObject.error = error.message;
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(returnStatus).json(returnObject);
 };
 
-export const getProduct = async (req, res) => {
+export const getProductById = async (req, res) => {
   const returnObject = {};
-  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+  let returnStatus = constants.Status200.OK.code;
 
   const { productId } = req.params;
 
   try {
-    const product = await ProductProvider.getProduct(productId);
+    const product = await ProductService.getProductById(productId);
 
     if (!product) {
-      returnStatus = StatusCode.CLIENT_ERROR.NOT_FOUND;
-      returnObject.status = StatusString.ERROR;
-      returnObject.error = "Product not found.";
+      returnStatus = constants.Status400.NOT_FOUND.code;
+
+      returnObject.status = constants.Status400.NOT_FOUND.name;
     } else {
-      returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatSingleRecord(product);
+      returnObject.status = constants.Status200.OK.name;
+      returnObject.payload = product;
     }
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
-    returnObject.status = StatusString.ERROR;
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
     returnObject.error = error.message;
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(returnStatus).json(returnObject);
 };
 
 export const createProduct = async (req, res) => {
   const returnObject = {};
-  let returnStatus = StatusCode.SUCCESSFUL.CREATED;
+  let returnStatus = constants.Status200.CREATED.code;
 
   const { body } = req;
 
   try {
     const deletedProductWithMatchingCode =
-      await ProductProvider.getDeletedProduct(body.code);
+      await ProductService.getDeletedProductByCode(body.code);
 
     if (!deletedProductWithMatchingCode) {
-      const newProduct = await ProductProvider.createProduct(body);
+      const newProduct = await ProductService.createProduct(body);
 
-      returnObject.payload = formatSingleRecord(newProduct);
+      returnObject.status = constants.Status200.CREATED.name;
+      returnObject.payload = newProduct;
     } else {
-      const restoredProduct = await ProductProvider.restoreProduct(body.code);
+      const restoredProduct = await ProductService.restoreProduct(body.code);
 
-      returnObject.status = StatusString.SUCCESS;
-      returnObject.payload = formatSingleRecord(restoredProduct);
+      returnObject.status = constants.Status200.CREATED.name;
+      returnObject.payload = restoredProduct;
     }
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
 
-    returnObject.status = StatusString.ERROR;
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
     returnObject.error = error.message;
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(returnStatus).json(returnObject);
 };
 
-export const updateProduct = async (req, res) => {
+export const updateProductById = async (req, res) => {
   const returnObject = {};
-  const returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+  let returnStatus = constants.Status200.OK.code;
 
   const { productId } = req.params;
   const { body } = req;
 
   try {
-    const updatedProduct = await ProductProvider.updateProduct(productId, body);
+    const updatedProduct = await ProductService.updateProductById(
+      productId,
+      body
+    );
 
-    returnObject.status = StatusString.SUCCESS;
-    returnObject.payload = formatSingleRecord(updatedProduct);
+    returnObject.status = constants.Status200.OK.name;
+    returnObject.payload = updatedProduct;
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
 
-    returnObject.status = StatusString.ERROR;
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
     returnObject.error = error.message;
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(returnStatus).json(returnObject);
 };
 
-export const deleteProduct = async (req, res) => {
+export const addCategoryToProduct = async (req, res) => {
   const returnObject = {};
-  let returnStatus = StatusCode.SUCCESSFUL.SUCCESS;
+  let returnStatus = constants.Status200.OK.code;
+
+  const { productId, categoryId } = req.params;
+
+  try {
+    const existingCategory = await CategoryService.getCategoryById(categoryId);
+
+    if (!existingCategory) {
+      returnStatus = constants.Status400.NOT_FOUND.code;
+
+      returnObject.status = constants.Status400.NOT_FOUND.code;
+      returnObject.error = "No category was found with the provided categoryId";
+    } else {
+      const updatedProduct = await ProductService.addCategoryToProduct(
+        productId,
+        categoryId
+      );
+
+      returnObject.status = constants.Status200.OK.name;
+      returnObject.payload = updatedProduct;
+    }
+  } catch (error) {
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
+
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
+    returnObject.error = error.message;
+  }
+
+  res.status(returnStatus).json(returnObject);
+};
+
+export const updateProductCategories = async (req, res) => {
+  const returnObject = {};
+  let returnStatus = constants.Status200.OK.code;
+
+  const { productId } = req.params;
+
+  const { categories } = req.query;
+
+  try {
+    const updatedProduct = await ProductService.updateProductCategories(
+      productId,
+      categories
+    );
+
+    if (!updatedProduct) {
+      returnStatus = constants.Status400.NOT_FOUND.code;
+
+      returnObject.status = constants.Status400.NOT_FOUND.name;
+      returnObject.error = `No product was foudn with id ${productId}.`;
+    } else {
+      returnObject.status = constants.Status200.OK.name;
+      returnObject.payload = updatedProduct;
+    }
+  } catch (error) {
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
+
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
+    returnObject.error = error.message;
+  }
+
+  res.status(returnStatus).json(returnObject);
+};
+
+export const removeCategoryFromProduct = async (req, res) => {
+  const returnObject = {};
+  let returnStatus = constants.Status200.OK.code;
+
+  const { productId, categoryId } = req.params;
+
+  try {
+    const updatedProduct = await ProductService.removeCategoryFromProduct(
+      productId,
+      categoryId
+    );
+
+    if (!updatedProduct) {
+      returnStatus = constants.Status400.NOT_FOUND.code;
+
+      returnObject.status = constants.Status400.NOT_FOUND.name;
+      returnObject.error = "Product and/or category not found.";
+    } else {
+      returnObject.status = constants.Status200.OK.name;
+      returnObject.payload = updatedProduct;
+    }
+  } catch (error) {
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
+
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
+    returnObject.error = error.message;
+  }
+
+  res.status(returnStatus).json(returnObject);
+};
+
+export const deleteProductById = async (req, res) => {
+  const returnObject = {};
+  let returnStatus = constants.Status200.OK.code;
 
   const { productId } = req.params;
 
   try {
-    const deletedProductResult = await ProductProvider.deleteProduct(productId);
+    const deletedProductResult = await ProductService.deleteProductById(
+      productId
+    );
 
-    returnObject.status = StatusString.SUCCESS;
+    returnObject.status = constants.Status200.OK.name;
     returnObject.payload = deletedProductResult;
   } catch (error) {
-    returnStatus = StatusCode.CLIENT_ERROR.BAD_REQUEST;
+    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
 
-    returnObject.status = StatusString.ERROR;
+    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
     returnObject.error = error.message;
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(returnStatus).json(returnObject);
 };

@@ -8,9 +8,21 @@ export const getAllCateogries = async (query, options) => {
   }
 };
 
-export const getCategory = async (categoryId) => {
+export const getCategoryById = async (categoryId) => {
   try {
     return await CategoryModel.findById(categoryId);
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const getCategoryByName = async (categoryName) => {
+  try {
+    const categoryNameRegExp = new RegExp(`${categoryName}`, "gi");
+
+    return await CategoryModel.findOne({
+      name: categoryNameRegExp,
+    });
   } catch (error) {
     throw new Error(error.message);
   }

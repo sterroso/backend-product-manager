@@ -52,9 +52,13 @@ export const getCategories = async (req, res) => {
       if (categories?.limit) {
         let baseUrl = `${req.baseUrl}${req.path}`;
 
-        baseUrl += `?limit=${limit}`;
+        baseUrl += `?limit=${categories.limit}`;
 
         baseUrl += categories?.offset ? `&offset=${categories.offset}` : "";
+
+        if (query?.name) {
+          baseUrl += `&name=${name}`;
+        }
 
         if (options?.sort) {
           Object.getOwnPropertyNames(options.sort).forEach((property) => {
@@ -65,10 +69,6 @@ export const getCategories = async (req, res) => {
               options.sort[property] === 1 ? "asc" : "desc"
             }`;
           });
-        }
-
-        if (query?.name) {
-          baseUrl += `&name=${name}`;
         }
 
         categories.prevPageUrl = categories?.hasPrevPage
@@ -99,14 +99,14 @@ export const getCategories = async (req, res) => {
   res.status(returnStatus).json(returnObject).end();
 };
 
-export const getCategory = async (req, res) => {
+export const getCategoryById = async (req, res) => {
   const returnObject = {};
   let returnStatus = constants.Status200.OK.code;
 
   const { categoryId } = req.params;
 
   try {
-    const category = await CategoryService.getCategory(categoryId);
+    const category = await CategoryService.getCategoryById(categoryId);
 
     if (!category) {
       returnStatus = constants.Status400.NOT_FOUND.code;

@@ -6,9 +6,9 @@ const route = Router();
 
 route.get("/", CategoryController.getCategories);
 
-route.get("/:categoryId", CategoryController.getCategory);
+route.get("/:categoryId", CategoryController.getCategoryById);
 
-route.post("/", CategoryController.createCategory);
+route.post("/", auth, CategoryController.createCategory);
 
 route.put("/:categoryId", auth, CategoryController.updateCategory);
 
