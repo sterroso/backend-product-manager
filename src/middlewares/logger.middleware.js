@@ -1,9 +1,12 @@
-import logger from "../utils/logger.js";
-import Clock from "../utils/datetime.js";
+import { httpLogger as log } from "../utils/logger.js";
 
 export default (req, res, next) => {
-  logger.info(
-    `${Clock.date({ style: "medium" })} ${Clock.time()}, Method: ${req.method}, URL: ${req.url}`
+  req.logger = log;
+  req.logger.info(
+    `${new Date().toLocaleString("es-MX", {
+      dateStyle: "short",
+      timeStyle: "medium",
+    })} ${req.method} @ ${req.path}; ?${req?.query || "NO QUERY"}`
   );
   next();
 };
