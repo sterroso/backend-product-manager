@@ -13,6 +13,7 @@ import AuthRouter from "./src/routes/auth.router.js";
 import PassportLocalRouter from "./src/routes/passportLocal.router.js";
 import PassportGithubRouter from "./src/routes/github.router.js";
 import ViewsRouter from "./src/routes/views.router.js";
+import HttpLogger from "./src/middlewares/logger.middleware.js";
 
 // Access to environment variables.
 dotenv.config();
@@ -39,6 +40,7 @@ app.use(
     cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }, // Seven days
   })
 );
+app.use(HttpLogger);
 
 app.use(passport.initialize());
 app.use(passport.session());
