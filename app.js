@@ -5,6 +5,7 @@ import session from "express-session";
 import mongoStore from "connect-mongo";
 import passport from "passport";
 import { engine } from "express-handlebars";
+import WarehouseRouter from "./src/routes/warehouse.router.js";
 import ProductsRouter from "./src/routes/products.router.js";
 import CartsRouter from "./src/routes/carts.router.js";
 import CategoriesRouter from "./src/routes/category.router.js";
@@ -57,6 +58,7 @@ app.use("/api/passportLocal/", PassportLocalRouter);
 app.use("/api/github/", PassportGithubRouter);
 app.use("/api/users/", UsersRouter);
 app.use("/api/categories/", CategoriesRouter);
+app.use("/api/warehouses/", WarehouseRouter);
 app.use("/api/products/", ProductsRouter);
 app.use("/api/carts/", CartsRouter);
 

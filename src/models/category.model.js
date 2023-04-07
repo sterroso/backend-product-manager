@@ -1,7 +1,9 @@
+/* --------------------------------- Imports -------------------------------- */
 import { Schema, model } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
 
+/* ----------------------------- Implementation ----------------------------- */
 export const categorySchema = new Schema(
   {
     name: {
@@ -27,4 +29,5 @@ categorySchema.plugin(MongoosePaginate);
 
 const CategoryModel = model("Category", categorySchema);
 
+/* ----------------------------- Module Exports ----------------------------- */
 export default CategoryModel;
