@@ -1,12 +1,36 @@
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 
-const secret = randomBytes(64, (err, buf) => {
-  if (err) return { status: "error", error: err.message };
+const MAX_LENGTH = 2048; // Avoid an excessively large key to be generated.
 
-  return {
-    status: "success",
-    secret: `${buf.toString("hex")}`,
-  };
-});
+const validEncodingPatterns = [
+  /^utf{-}?8$/i,
+  /^utf{-}?16le$/i,
+  /^latin1$/i,
+  /^base64(url)?$/i,
+  /^hex$/i,
+  /^ascii$/i,
+  /^binary$/i,
+  /^ucs2$/i,
+];
+
+const secret = (options = { length: 18, format: "hex" }) => {
+  const numLength = Number(options?.length || 0);
+
+  const length =
+    !isNaN(numLength) &&
+    numLength > 0 &&
+    numLength % 1 === 0 &&
+    numLength <= MAX_LENGTH
+      ? numLength
+      : 18;
+
+  let format = "hex";
+
+  if (validEncodingPatterns.some((pattern) => pattern.test(options?.format))) {
+    format = options.format;
+  }
+
+  return randomBytes(length).toString(format);
+};
 
 export default secret;

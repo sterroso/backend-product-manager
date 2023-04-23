@@ -1,5 +1,7 @@
 import * as CategoryService from "../dao/category.mongo-dao.js";
+import { HttpStatus, PaginateCustomLabels } from "../config/app.constants.js";
 import * as constants from "../config/app.constants.js";
+import ResponseObject from "../common/ResponseObject.ts";
 
 const isValidNumericParam = (param, includesZero = false) => {
   const numParam = Number(param ?? 0);
@@ -12,33 +14,27 @@ const isValidNumericParam = (param, includesZero = false) => {
 };
 
 export const getCategories = async (req, res) => {
-  let returnObject = {};
-  let returnStatus = constants.Status200.OK.code;
+  const responseObject = new ResponseObject(HttpStatus.OK);
 
   const { limit = 10, page = 1, offset, sortByName = "asc", name } = req.query;
 
   const options = {};
 
-  if (isValidNumericParam(limit)) {
-    options.customLabels = constants.PaginateCustomLabels;
+  options.customLabels = PaginateCustomLabels;
 
-    options.limit = Number(limit);
+  options.limit = isValidNumericParam(limit) ? Number(limit) : 10;
 
-    if (isValidNumericParam(offset, true)) {
-      options.offset = Number(offset);
-    }
+  options.page = isValidNumericParam(page) ? Number(page) : 1;
 
-    options.page = isValidNumericParam(page) ? Number(page) : 1;
-  } else {
-    options.pagination = false;
-    options.customLabels = constants.PaginateNoLabels;
+  if (isValidNumericParam(offset, true)) {
+    options.offset = Number(offset);
   }
 
   if (["asc", "desc"].includes(sortByName)) {
     options.sort = { name: sortByName === "asc" ? 1 : -1 };
   }
 
-  const query = {};
+  const query = { deleted: false };
 
   if (name) {
     query.name = new RegExp(`${name}`, "gi");
@@ -48,55 +44,37 @@ export const getCategories = async (req, res) => {
     const categories = await CategoryService.getAllCateogries(query, options);
 
     if ((categories?.totalRecords || 0) > 0) {
-      // If the resuls contain a "limit" property ...
-      if (categories?.limit) {
-        let baseUrl = `${req.baseUrl}${req.path}`;
-
-        baseUrl += `?limit=${categories.limit}`;
-
-        baseUrl += categories?.offset ? `&offset=${categories.offset}` : "";
-
-        if (query?.name) {
-          baseUrl += `&name=${name}`;
-        }
-
-        if (options?.sort) {
-          Object.getOwnPropertyNames(options.sort).forEach((property) => {
-            const sortByParameterName = `sortBy${property
-              .charAt(0)
-              .toUpperCase()}${property.substring(1)}`;
-            baseUrl += `&${sortByParameterName}=${
-              options.sort[property] === 1 ? "asc" : "desc"
-            }`;
-          });
-        }
-
-        categories.prevPageUrl = categories?.hasPrevPage
-          ? `${baseUrl}&page=${categories.prevPage}`
-          : null;
-
-        categories.nextPageUrl = categories?.hasNextPage
-          ? `${baseUrl}&page=${categories.nextPage}`
-          : null;
-      }
-
-      returnObject = {
-        ...categories,
-        status: constants.Status200.OK.name,
-      };
+      responseObject.payload = categories?.payload || [];
+      responseObject.limit = categories?.limit;
+      responseObject.page = categories?.page;
+      responseObject.offset = categories?.offset;
+      responseObject.pagingCounter = categories?.pagingCounter;
+      responseObject.hasNextPage = categories?.hasNextPage || false;
+      responseObject.hasPrevPage = categories?.hasPrevPage || false;
+      responseObject.nextPage = categories?.nextPage || null;
+      responseObject.prevPage = categories?.prevPage || null;
+      responseObject.nextPageLink = responseObject.getNextPageLink(
+        req.baseUrl,
+        req.path,
+        options,
+        query
+      );
+      responseObject.prevPageLink = responseObject.getPrevPageLink(
+        req.baseUrl,
+        req.path,
+        options,
+        query
+      );
+      responseObject.meta = categories?.meta || null;
     } else {
-      returnStatus = constants.Status400.NOT_FOUND.code;
-
-      returnObject.status = constants.Status400.NOT_FOUND.name;
+      responseObject.status = HttpStatus.NOT_FOUND;
     }
   } catch (error) {
-    returnStatus = constants.Status500.INTERNAL_SERVER_ERROR.code;
-
-    returnObject.status = constants.Status500.INTERNAL_SERVER_ERROR.name;
-    returnObject.error = error.message;
+    responseObject.status = HttpStatus.INTERNAL_SERVER_ERROR;
+    responseObject.error = error;
   }
 
-  res.status(returnStatus).json(returnObject).end();
+  res.status(responseObject.statusCode).json(responseObject.toJSON()).end();
 };
 
 export const getCategoryById = async (req, res) => {

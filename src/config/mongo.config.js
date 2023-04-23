@@ -7,7 +7,7 @@ try {
   mongoose.set("strictQuery", false);
   mongoose.set("sanitizeFilter", true);
 
-  mongoose.connect(process.env?.MONGODB_CONNECTION_STRING, (error) => {
+  mongoose.connect(process.env?.MONGODB_URI, (error) => {
     if (error) {
       console.error("Mongoose Connect Error! 🤔");
       console.error(error.message);

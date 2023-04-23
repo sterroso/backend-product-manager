@@ -4,7 +4,11 @@ import cookie from "cookie-parser";
 import session from "express-session";
 import mongoStore from "connect-mongo";
 import passport from "passport";
+import swaggerJSDoc from "swagger-jsdoc";
+import SwaggerUiExpress from "swagger-ui-express";
 import { engine } from "express-handlebars";
+
+// Import Routers
 import WarehouseRouter from "./src/routes/warehouse.router.js";
 import ProductsRouter from "./src/routes/products.router.js";
 import CartsRouter from "./src/routes/carts.router.js";
@@ -14,7 +18,12 @@ import AuthRouter from "./src/routes/auth.router.js";
 import PassportLocalRouter from "./src/routes/passportLocal.router.js";
 import PassportGithubRouter from "./src/routes/github.router.js";
 import ViewsRouter from "./src/routes/views.router.js";
+
+// Import Logger
 import HttpLogger from "./src/middlewares/logger.middleware.js";
+
+// Import Swagger Options
+import swaggerConfig from "./src/config/swagger.config.js";
 
 // Access to environment variables.
 dotenv.config();
@@ -51,8 +60,16 @@ app.engine(".hbs", engine({ extname: ".hbs" }));
 app.set("view engine", ".hbs");
 app.set("views", "src/views");
 
+// Setup swagger for api documentation
+const swaggerSpec = swaggerJSDoc(swaggerConfig);
+
 // App routes
 app.use("/", ViewsRouter);
+app.use(
+  "/apidocs",
+  SwaggerUiExpress.serve,
+  SwaggerUiExpress.setup(swaggerSpec)
+);
 app.use("/api/auth/", AuthRouter);
 app.use("/api/passportLocal/", PassportLocalRouter);
 app.use("/api/github/", PassportGithubRouter);
